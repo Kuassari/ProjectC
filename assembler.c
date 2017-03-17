@@ -42,10 +42,19 @@ startLoop(char * fileName){
 
 	FILE *fp;
 	int j;
+	char[MAX_BUF] buf;
 	fp = fopen(fileName, "r");
 	if(!fp){
 	   printf("cannot open file\n");
 	   exit(0);
 	}
-	
+
+	while(fgets(buf,MAX_BUF,fp) != NULL){
+	   
+	   
+	   
+	   
+	   
+	   
+	}
 }
