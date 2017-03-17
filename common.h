@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+
 #define MAX_BUF 80
 #define MAX_FILENAME 32
 
+/*------------------- symbols structure -------------------*/
 typedef enum{action,instruction}act_inst;
-
 typedef struct symbols{
 	char * name;
 	char * address;
@@ -18,22 +19,37 @@ typedef struct symbols{
 
 sym _head = NULL;
 
-void addSymbol(){
+/* create new data link of symbol and return a pointer to it */
+sym * createSym(char * name, char * add, bool isExt, act_inst type)
+{
+	sym * newSym = (sym *)malloc(sizeof(sym));
+	newSym->name = name;
+	newSym->address = add;
+	newSym->isExtern = isExt;
+	newSym->type = type;
+	newSym->next = NULL;
+
+	return newSym; 
+}
+
+/* add new symbol to the list */
+void addSymbol(sym newSym){
    if(_head == NULL){
-	_head = newsym;
-	newsym->next = NULL;
+	_head = newSym;
+	newSym->next = NULL;
    }
    else{
 	sym temp = _head;
 	while(temp->next!=NULL)
 		temp = temp->next;
 	
-	temp->next = newsym;
+	temp->next = newSym;
    }
    return;	
 }
 
-void freeList(){
+/* free memory allocation of symbols */
+void freeSymbolList(){
    sym temp = _head;
    while(_head != NULL)
    {
@@ -43,6 +59,7 @@ void freeList(){
    }	
 }
 
+/* get the Label at the list symbol table */
 int getLabel(char* labelName){
    int count = 0;
    sym temp = _head;
@@ -58,6 +75,7 @@ int getLabel(char* labelName){
    return -1;
 }
 
+/* get the address of a specific symbol by it's position in the list */
 char* getAddress(int position){
    sym temp = _head;
    int count = 0;
@@ -66,3 +84,18 @@ char* getAddress(int position){
    }
    return temp->address;
 }
+
+
+
+/*------------------- code structure -------------------*/
+typedef enum{action,instruction}act_inst;
+typedef struct code{
+	char * command;
+	char * operand1;
+	char * operand2;
+	int position;
+	*cod next;
+}cod;
+
+/* initiallize the start position in the memory to 100 */
+int IC = 100;
