@@ -1,28 +1,23 @@
+/*------------------- Libraries-------------------*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
+/*------------------- Constant Variables -------------------*/
 
 #define MAX_BUF 81
 #define MAX_FILENAME 32
 #define MAX_LABEL 31
 #define COMMANDS_NUMBER 15
 
+
+/*------------------- Global Variables -------------------*/
+
 typedef enum{"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"}command;
 char ** commands = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"};
 
-/* check if a given string is a command. return its number if it is, or -1 if it's not */
-int checkCMD(char * toCheck){
-   int i;
-   for(i = 0; i<COMMANDS_NUMBER; i++){
-	if(strcmp(commands[i],toCheck) == 0)
-		return i;
-   }
-
-
-   return -1;
-}
 
 /*------------------- symbols structure -------------------*/
 typedef enum{action,instruction}act_inst;
@@ -35,6 +30,9 @@ typedef struct symbols{
 }sym;
 
 sym _head = NULL;
+
+/*------------------- method structure -------------------*/
+int checkCMD(char *)
 
 /* create new data link of symbol and return a pointer to it */
 sym * createSym(char * name, char * add, bool isExt, act_inst type)
@@ -50,12 +48,16 @@ sym * createSym(char * name, char * add, bool isExt, act_inst type)
 }
 
 /* add new symbol to the list */
-void addSymbol(sym newSym){
-   if(_head == NULL){
+void addSymbol(sym newSym)
+{
+   if(_head == NULL)
+   {
 	_head = newSym;
 	newSym->next = NULL;
    }
-   else{
+
+   else
+   {
 	sym temp = _head;
 	while(temp->next!=NULL)
 		temp = temp->next;
@@ -66,7 +68,8 @@ void addSymbol(sym newSym){
 }
 
 /* free memory allocation of symbols */
-void freeSymbolList(){
+void freeSymbolList()
+{
    sym temp = _head;
    while(_head != NULL)
    {
@@ -77,14 +80,17 @@ void freeSymbolList(){
 }
 
 /* get the Label at the list symbol table */
-int getLabel(char* labelName){
+int getLabel(char* labelName)
+{
    int count = 0;
    sym temp = _head;
-   while(_head != NULL){
-	if(strcmp(labelName, temp->name) == 0){
+   while(_head != NULL)
+   {
+	if(strcmp(labelName, temp->name) == 0)
 	   return count;
-	}
-	else{
+
+	else
+	{
 	   count++;
 	   temp = temp->next;
 	}
@@ -93,12 +99,13 @@ int getLabel(char* labelName){
 }
 
 /* get the address of a specific symbol by it's position in the list */
-char* getAddress(int position){
+char* getAddress(int position)	
+{
    sym temp = _head;
    int count = 0;
-   while(count < position){
+   while(count < position)
 	temp = temp->next;
-   }
+
    return temp->address;
 }
 
@@ -106,7 +113,8 @@ char* getAddress(int position){
 
 /*------------------- code structure -------------------*/
 typedef enum{action,instruction}act_inst;
-typedef struct code{
+typedef struct code
+{
 	char * command;
 	char * operand1;
 	char * operand2;
@@ -124,7 +132,8 @@ int IC = 100;
 
 /*------------------- data structure -------------------*/
 typedef enum{string,data}str_dat;
-typedef struct data{
+typedef struct data
+{
 	char * name;
 	int position;
 	str_data type;
