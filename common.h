@@ -22,6 +22,8 @@
 int IC = IC_FIRST_ADDRESS;
 int DC = DC_FIRST_ADDRESS;
 
+typedef enum{"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"}command;
+char ** commands = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"};
 
 /*------------------- Symbols Structure -------------------*/
 typedef enum{action,instruction}act_inst;
