@@ -4,8 +4,25 @@
 #include <ctype.h>
 
 
-#define MAX_BUF 80
+#define MAX_BUF 81
 #define MAX_FILENAME 32
+#define MAX_LABEL 31
+#define COMMANDS_NUMBER 15
+
+typedef enum{"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"}command;
+char ** commands = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"};
+
+/* check if a given string is a command. return its number if it is, or -1 if it's not */
+int checkCMD(char * toCheck){
+   int i;
+   for(i = 0; i<COMMANDS_NUMBER; i++){
+	if(strcmp(commands[i],toCheck) == 0)
+		return i;
+   }
+
+
+   return -1;
+}
 
 /*------------------- symbols structure -------------------*/
 typedef enum{action,instruction}act_inst;
@@ -94,8 +111,25 @@ typedef struct code{
 	char * operand1;
 	char * operand2;
 	int position;
+	act_inst type;
 	*cod next;
 }cod;
 
 /* initiallize the start position in the memory to 100 */
 int IC = 100;
+
+
+
+
+
+/*------------------- data structure -------------------*/
+typedef enum{string,data}str_dat;
+typedef struct data{
+	char * name;
+	int position;
+	str_data type;
+	*dat next;
+}dat;
+
+/* initiallize the start position in the memory to 0 */
+int DC = 0;
