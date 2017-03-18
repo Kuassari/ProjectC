@@ -5,8 +5,6 @@ void startLoop(FILE *, char *)
 int main(int argc, char *argv[]) {
 
 	int i;
-	int IC = 100;
-	int DC = 0;
 	*char[] nameList;
 	
 	/* create array to hold given filenames */
