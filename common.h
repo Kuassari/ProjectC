@@ -7,32 +7,62 @@
 
 /*------------------- Constant Variables -------------------*/
 
-#define MAX_BUF 81
-#define MAX_FILENAME 32
-#define MAX_LABEL 31
-#define COMMANDS_NUMBER 15
-
+#define IC_FIRST_ADDRESS       100
+#define DC_FIRST_ADDRESS       0
+#define MAX_DATA_SIZE          1000
+#define MAX_BUF                80
+#define MAX_FILENAME           32
+#define MAX_LABEL_LENGTH       30
+#define WORD_LENGTH            15
+#define MAX_REGISTER_DIGIT     7
+#define BYTE_SIZE	       8
 
 /*------------------- Global Variables -------------------*/
 
-typedef enum{"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"}command;
-char ** commands = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"};
+int IC = IC_FIRST_ADDRESS;
+int DC = DC_FIRST_ADDRESS;
 
 
-/*------------------- symbols structure -------------------*/
+/*------------------- Symbols Structure -------------------*/
 typedef enum{action,instruction}act_inst;
-typedef struct symbols{
-	char * name;
-	char * address;
-	bool isExtern;
-	act_inst type;
-	*symbol next;
+typedef struct symbols
+{
+	char name[MAX_LABLE_LENGTH];	/* the name of the lable */
+	int address;			/* the address of the lable */
+	bool isExtern;			/* extern = true, not extern = false */
+	act_inst type;			/* action or instruction statment flag */
 }sym;
 
-sym _head = NULL;
 
-/*------------------- method structure -------------------*/
-int checkCMD(char *)
+
+
+
+/*------------------- Code Structure -------------------*/
+typedef struct code
+{
+	char * command;
+	char * operand1;
+	char * operand2;
+	int position;
+	act_inst type;
+	*cod next;
+}cod;
+
+
+
+/*------------------- Data Structure -------------------*/
+typedef enum{string,data}str_dat;
+typedef struct data
+{
+	char * name;
+	int position;
+	str_data type;
+	*dat next;
+}dat;
+
+
+
+
 
 /* create new data link of symbol and return a pointer to it */
 sym * createSym(char * name, char * add, bool isExt, act_inst type)
@@ -111,34 +141,4 @@ char* getAddress(int position)
 
 
 
-/*------------------- code structure -------------------*/
-typedef enum{action,instruction}act_inst;
-typedef struct code
-{
-	char * command;
-	char * operand1;
-	char * operand2;
-	int position;
-	act_inst type;
-	*cod next;
-}cod;
 
-/* initiallize the start position in the memory to 100 */
-int IC = 100;
-
-
-
-
-
-/*------------------- data structure -------------------*/
-typedef enum{string,data}str_dat;
-typedef struct data
-{
-	char * name;
-	int position;
-	str_data type;
-	*dat next;
-}dat;
-
-/* initiallize the start position in the memory to 0 */
-int DC = 0;
