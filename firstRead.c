@@ -1,4 +1,4 @@
-int checkCMD(char *)
+
 
 
 
@@ -6,14 +6,15 @@ int checkCMD(char *)
 startLoop(char * fileName)
 {
 
-	FILE *fp;
-	int j;
-	char[MAX_BUF] buf;
-	bool label;
-	char[MAX_LABEL_LENGTH] word;
-	char letter;
-	int labelpos;
-	int cmdNUM;		/* what comand it is */
+	FILE *fp;			
+	int j,i;			/* index variable */
+	char[MAX_BUF] buf;		/* a buffer to hold the current line read */
+	bool label;			/* holds info on whether a label exists in line or not */
+	char[MAX_LABEL_LENGTH] word;	/* a buffer for the curent word read */
+	char letter;			
+	int labelpos;			/* label position in line */ 
+	int cmdNUM;			/* command type */
+
 	fp = fopen(fileName, "r");
 
 	if(!fp)
@@ -24,13 +25,23 @@ startLoop(char * fileName)
 
 	while(fgets(buf,MAX_BUF,fp) != NULL) /* reads a line from the text file */
 	{
-	   strncpy(letter,word,1);
+	   strncpy(letter,buf,1);
 	   if(letter == ';')
 	   {
 		break;
 	   }
+	   
+	   i = 0;
+	   while(isspace(buf+i) /* checks if the line is empty */
+	   {
+	   	i++;
+		if((buf+i) == EOF)
+		{
+		    break;
+		{
+	   }
 
-	   if((labelpos = strchr(buf,':')) != NULL)  /* check if the line contains a label */
+	   if((labelpos = strchr(buf,':')) != NULL)  /* checks if the line contains a label */
 	   {
 	     	label = true;
 		sscanf(buf, " %s", word);
@@ -51,38 +62,39 @@ startLoop(char * fileName)
 		
 	   }
 
-	   else{
+	   else
+	   {
 	     	label = false;
 	   }
 
-	   if(strstr(buf,".data") != NULL || strstr(buf,".string") != NULL){
+	   if(strstr(buf,".data") != NULL || strstr(buf,".string") != NULL)
+		{
 		 /* step 6+7 in algorithm */  
 		}
 		
-		if(strstr(buf,".entry") != NULL || strstr(buf,".extern") != NULL){
+		if(strstr(buf,".entry") != NULL || strstr(buf,".extern") != NULL)
+		{
 		 /* step 9+10 in algorithm */
 		}
 		
 		/* step 11 */
 	   if(label)
 	   {
-		
-		while(isspace(buf+labelpos))
-		   labelpos++;
-		word = strncpy(word,buf+labelpos,3);
+		j = skipSpaces(buf+labelpos,word);
+		j += labelpos;
 	   }
 	   else
 	   {
-		while(isspace(buf+j))
-		   j++;
-		word = strncpy(word,buf+j,3);
+		j = skipSpaces(buf+j,word);
 	   }
 	   
 
 	   cmdNUM = checkCMD(word);
-	   switch(cmdNUM){
+	   switch(cmdNUM)
+	   {
 		case -1: /* error: no command */
 		case 0:  /* mov */ 
+			j = skipSpaces(buf+j,word);
 			
 		case 1:  /* cmp */
 			
@@ -114,8 +126,51 @@ startLoop(char * fileName)
 			
 	   	case 15: /* stop */
 			
+		default: /* if not a command, or error */
 	   }
 	}
 
 	/* merge code table with data table */
+}
+
+int skipSpaces(char * str, char * toWord)	/* a function for "skipping" spaces in a given string */
+{
+	int i = 0;
+	while(isspace(str+i)) 	 	/* as long as current letter pointed to in the string is space */
+	{
+	   i++;			 	/* skip a letter */
+	   if((str+i) == EOF) 	 	/* check for making sure we didn't reach end of string */
+		break;
+	}
+	toWord = strcpy(toWord,buf+i);  /* copy the next "word" to the desired string */
+	
+	return i;
+}
+
+int checkTwoOperands(char * str)			/* a function to check the operands of a command that needs 2 operands. assume these 2 operands exist in the string and the given string begins with the first operand and not a space */
+{
+	int i = 0;
+	bool op1reg;
+	bool op2reg;
+	bool squareBrackets;
+	bool directNum;
+	char * temp;
+	
+	if(str[i] == '#')
+	{
+	   directNum == true;
+	   
+	}
+	if(str[i] == 'r' && isdigit(str[i+1]) && directNum == false) /* first operand found to be a register */
+	{
+	   if(str[i+1] == 8 || str[i+1] == 9)
+	   {
+		/* error, illegal number of register */
+		/* ADD ERROR HANDLING */
+	   }
+	   op1reg = true;
+	   i = skipSpaces(str, temp);
+	}
+	
+
 }
