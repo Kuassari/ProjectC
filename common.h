@@ -25,16 +25,9 @@ int DC = DC_FIRST_ADDRESS;
 typedef enum{"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"}command;
 char ** commands = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"};
 
-/*------------------- Symbols Structure -------------------*/
-typedef enum{action,instruction}act_inst;
-typedef struct symbols
-{
-	char name[MAX_LABLE_LENGTH];	/* the name of the lable */
-	int address;			/* the address of the lable */
-	bool isExtern;			/* extern = true, not extern = false */
-	act_inst type;			/* action or instruction statment flag */
-}sym;
+/*----------------- Functions Declaration -----------------*/
 
+int checkCMD(char *)
 
 
 
@@ -64,6 +57,17 @@ typedef struct data
 
 
 
+/*------------------- Symbols Structure -------------------*/
+typedef enum{action,instruction}act_inst;
+typedef struct symbols
+{
+	char name[MAX_LABLE_LENGTH];	/* the name of the lable */
+	int address;			/* the address of the lable */
+	bool isExtern;			/* extern = true, not extern = false */
+	act_inst type;			/* action or instruction statment flag */
+}sym;
+
+sym _head = NULL;
 
 
 /* create new data link of symbol and return a pointer to it */
@@ -140,7 +144,6 @@ char* getAddress(int position)
 
    return temp->address;
 }
-
 
 
 
