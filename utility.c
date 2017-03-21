@@ -5,8 +5,9 @@ int checkCMD(char * toCheck)
 {
    int i;
    for(i = 0; i<COMMANDS_NUMBER; i++)
-	if(strcmp(commands[i],toCheck) == 0)
+	if(strncmp(commands[i],toCheck,3) == 0)
 		return i;
 
    return -1;
 }
+
