@@ -17,6 +17,21 @@
 #define MAX_REGISTER_DIGIT     7
 #define BYTE_SIZE	       8
 
+/*------------------- String constants -------------------*/
+
+#define COMMENT_SIGN ';'
+#define NEWLINE '\n'
+#define LABEL_FLAG ':'
+#define STR_FLAG '"'
+#define IMD_FLAG '#'
+#define REG_FLAG 'r'
+#define COMMA ','
+#define SPACE ' '
+#define PLUS '+'
+#define MINUS '-'
+#define LEFT_BRACKET '['
+#define RIGHT_BRACKET ']'
+
 /*------------------- Global Variables -------------------*/
 
 int IC = IC_FIRST_ADDRESS;
