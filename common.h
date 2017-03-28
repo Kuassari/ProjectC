@@ -26,7 +26,7 @@
 #define ENTRY_WORD ".entry"
 #define EXTERN_WORD ".extern"
 #define NEWLINE '\n'
-#define LABEL_FLAG ':'
+#define LABEL_SIGN ':'
 #define STR_FLAG '"'
 #define IMD_FLAG '#'
 #define REG_FLAG 'r'
@@ -155,6 +155,7 @@ typedef enum{string,data}str_dat;
 typedef struct data
 {
 	int position;
+	int value;
 	char * name;
 	str_data type;
 	*dat next;
@@ -164,7 +165,7 @@ dat _dathead = NULL;
 
 
 /* create new data link of data and return a pointer to it */
-dat * createDat(int position, char * name, str_data type)
+dat * createDat(int position, int value, char * name, str_data type)
 {
 	dat * newDat = (dat *)malloc(sizeof(dat));
 	if(newDat = NULL)
@@ -173,6 +174,7 @@ dat * createDat(int position, char * name, str_data type)
 	   /* ADD ERROR HANDLING */
 	}
 	newDat->position = position;
+	newDat->value = value;
 	newDat->name = name;
 	newSym->type = type;
 	newSym->next = NULL;
