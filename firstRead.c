@@ -48,6 +48,11 @@ startLoop(char * fileName)
 		/* empty line */
 		break;
 	   }
+
+	   /*--- MAKE SURE TO CHECK IF J IS NEEDED IN NEXT LINE ---*/
+	   /*--- MAKE SURE TO CHECK IF J IS NEEDED IN NEXT LINE ---*/ 
+	   /*--- MAKE SURE TO CHECK IF J IS NEEDED IN NEXT LINE ---*/
+
 	   strncpy(letter,buf+j,1); 		/* check first non-space letter of the line to see if it's a comment line */
 	   if(letter == COMMENT_SIGN)
 	   {
@@ -55,23 +60,23 @@ startLoop(char * fileName)
 	   }
 	   j = 0; /* reset index j after check */
 	   
-	   if((labelpos = strchr(buf,LABEL_FLAG)) != NULL) 	 /* checks if the line contains a label */
+	   if((labelpos = strchr(buf,LABEL_SIGN)) != NULL) 	 /* checks if the line contains a label */
 	   {
 		sscanf(buf, " %s", &word);
 		
 		/* checks for valid label */
-		if(strchr(word,LABEL_FLAG) == NULL)
+		if(strchr(word,LABEL_SIGN) == NULL)
 		{
 		    /* error, ':' is not part of label */
 		    /* ADD ERROR HANDLING */
 		}
 		else if(strchr(word,STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
 		{
-		   check = strcspn(word,LABEL_FLAG);					/* find the location of ':' */
+		   check = strcspn(word,LABEL_SIGN);					/* find the location of ':' */
 		   strncpy(tempWord,word,length);					/* copy the part of the word before ':' into tempWord, to check */
 		   if(strchr(tempWord,STRING_SIGN) == strrchr(tempWord,STRING_SIGN))	/* check that only one '"' exists before ':' */
 		   {
-			if(strchr(word+check,LABEL_FLAG) != NULL)
+			if(strchr(word+check,LABEL_SIGN) != NULL)
 			{
 			   break;		/* we have found that ':' is between two '"'s so it's not part of a label, but part of a string */
 			}
@@ -101,59 +106,137 @@ startLoop(char * fileName)
 	   }
 
 	   if(strstr(buf,DATA_WORD) != NULL || strstr(buf,STRING_WORD) != NULL)
+	   {
+		/* step 6+7 in algorithm */  
+
+		j = skipSpaces(buf,tempWord);			/* find the first word in line */
+		if(j == -1)
 		{
-		   /* step 6+7 in algorithm */  
-		   if(label_flag)
+			/* error: no more letters in line */
+			/* ADD ERROR HANDLING */
+		}
+		strcpy(tempBuf2,buf+j);				/* copy buf (without first spaces) to tempBuf2 (will be recopied if buf has a label) */	
+	
+		if(label_flag)					/* if label exists */
+		{	
+		   check = strcspn(buf+j,SPACE);			/* find the end of label name */
+		   strncpy(tempBuf,buf+j,check-1);			/* copy the label name to tempbuf, without spaces and ":" */
+		   strcpy(tempBuf2,buf+check+j);			/* copy the rest of buf to tempBuf2 */
+		   newSym = createSym(tempBuf, DC, false, instruction);	/* create a symbol with the label name */
+		   if(getLabel(tempBuf) == -1)				/* check that a label with the same name doesn't exist already */
 		   {
-			newDat = createDat(label, DC, bool isExt, act_inst type) 	/* create a data node with thesymbol name */
-			 /* ADD MORE CODE */
-			 /* ADD MORE CODE */
-			 /* ADD MORE CODE */
-		newSym = createSym(label, DC, true, instruction);		
-		if(getLabel(tempBuf2) == -1)				/* check that a label with the same name doesn't exist already */
+		   	addSymbol(newSym);				/* add the new external symbol to the symbol list */
+		   }
+		   else
+		   {
+			/* error: label name already exists */
+			/* ADD ERROR HANDLING */
+		   }		
+		}
+		j = skipSpaces(tempBuf2,tempWord);			/* find the next word in tempBuf2 (should be ".string" or ".data") */
+		if(j == -1)
 		{
-		   addSymbol(newSym);				/* add the new external symbol to the symbol list */
+			/* error: line is empty (after label name if there was label) */
+			/* ADD ERROR HANDLING */
+		}
+  		if(strncmp(tempWord,DATA_WORD,5) == 0)			/* if the word is ".data" */
+		{
+			
+		}
+		else if(strncmp(tempWord,STRING_WORD,7) == 0)		/* if the word is ".string" */
+		{
+			j = skipSpaces(tempBuf2+j+7,tempBuf2);		/* find the next word in buf (skipping previous spaces and ".string") */
+			if(j == -1)
+			{
+				/* error: line is empty after ".string" */
+				/* ADD ERROR HANDLING */
+			}
+			if(tempBuf2[0] != STR_FLAG)
+			{
+				/* error: next word is not a string */
+				/* ADD ERROR HANDLING */
+			}
+			else
+			{
+				if((tempBuf = strchr(tempBuf2[1],STR_FLAG)) != NULL) 	/* find end of string, copy it to tempbuf */
+				{
+					j = skipSpaces(tempBuf,tempWord);		/* find the next word in buf (skipping previous spaces and ".string") */
+					if(j != -1)
+					{
+						/* error: line isn't empty after the string */
+						/* ADD ERROR HANDLING */
+					}
+				}
+				else
+				{
+					/* error: no closing '"' for the string */
+					/* ADD ERROR HANDLING */
+				}
+
+				i = 0;
+				if(label_flag)
+				{	
+					newDat = createDat(DC, tempbuf[1+i], label , false, string) 	/* create a data node to hold next letter, with the label if it exists */
+					DC++;
+					i++;
+				}
+				while(tempbuf[1+i] != STR_FLAG)
+				{
+					newDat = createDat(DC, tempbuf[1+i], "" , false, string) 	/* create a data node to hold next letter */
+					DC++;
+					i++;
+				}
+				newDat = createDat(DC, 0, "" , false, string) 	/* create a data node of only "0" to signal end of string */
+				DC++;
+								
+			}
 		}
 		else
 		{
-			/* error: label name already exists */
+			/* error: word isnt ".data" or ".string" */
 			/* ADD ERROR HANDLING */
 		}
+		newDat = createDat(DC, , false, instruction) 	/* create a data node with the symbol name */
 		}
+		newDat = createDat(label, DC, false, instruction) 	/* create a data node with the symbol name */
+			 /* ADD MORE CODE */
+			 /* ADD MORE CODE */
+			 /* ADD MORE CODE */
 		
-		if(strstr(buf,ENTRY_WORD) != NULL || strstr(buf,EXTERN_WORD) != NULL)
+	   }
+		
+	   if(strstr(buf,ENTRY_WORD) != NULL || strstr(buf,EXTERN_WORD) != NULL)
+	   {
+		tempBuf = strchr(buf,SPACE);			/* find the end of instruction name */
+		/* step 9+10 in algorithm */
+		if(strstr(buf,EXTERN_WORD) != NULL)		/* if it's external instruction */
 		{
-		   	word = strchr(buf,SPACE);			/* find the end of instruction name */
-			/* step 9+10 in algorithm */
-			if(strstr(word,EXTERN_WORD) != NULL)		/* if it's external instruction */
-			{
-			   strcpy(tempBuf,word);			/* copy the rest of it to tempBuf, for checking */
-			   j = skipSpaces(tempBuf,tempBuf);		/* check that line isn't empty after ".extern" */
-			   if(j == -1)
-			   {
-				/* error: no more letters in line */
-				/* ADD ERROR HANDLING */
-			   }	
-			   check = strcspn(tempBuf,SPACE);		/* find the end of external symbol name */
-			   strncpy(tempBuf2,tempBuf,check);		/* copy the symbol name to tempbuf2, without spaces */			
-			   j = skipSpaces(tempBuf,tempWord);
-			   if(j != -1)
-			   {
-				/* error: line isn't empty after external symbol name */
-				/* ADD ERROR HANDLING */
-			   }
-			   newSym = createSym(tempBuf2, 0, true, instruction);	/* create a symbol with the external symbol name */
-			   if(getLabel(tempBuf2) == -1)				/* check that a label with the same name doesn't exist already */
-			   {
-			   	addSymbol(newSym);				/* add the new external symbol to the symbol list */
-			   }
-			   else
-			   {
-				/* error: label name already exists */
-				/* ADD ERROR HANDLING */
-			   }
-			}		 	
-		}
+		   j = skipSpaces(tempBuf,tempBuf);		/* check that line isn't empty after ".extern" */
+		   if(j == -1)
+		   {
+			/* error: no more letters in line */
+			/* ADD ERROR HANDLING */
+		   }	
+		   check = strcspn(tempBuf,SPACE);		/* find the end of external symbol name */
+		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempbuf2, without spaces and ":" */			
+		   j = skipSpaces(tempBuf,tempWord);
+		   if(j != -1)
+		   {
+			/* error: line isn't empty after external symbol name */
+			/* ADD ERROR HANDLING */
+		   }
+		   newSym = createSym(tempBuf2, 0, true, instruction);	/* create a symbol with the external symbol name */
+		   if(getLabel(tempBuf2) == -1)				/* check that a label with the same name doesn't exist already */
+		   {
+		   	addSymbol(newSym);				/* add the new external symbol to the symbol list */
+		   }
+		   else
+		   {
+			/* error: label name already exists */
+			/* ADD ERROR HANDLING */
+		   }
+		}		 	
+	   }
 		
 	   /* step 11 in algorithm */
 
@@ -193,13 +276,17 @@ startLoop(char * fileName)
 			}
 
 			2opresult = checkTwoOperands(buf+j,op1name,op2name);
-			if(2opresult % 10 == 1)
+			if(2opresult < 10)
+			{
+				/* error: error in operand info */
+				/* ADD ERROR HANDLING */
+			}
+			else if(2opresult % 10 == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'mov' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			
-			if(2opresult % 10 == 2 && 2opresult > 40) 	/* both operands are registers: they require only 1 word */
+			if(2opresult == 42) 	/* both operands are registers: they require only 1 word */
 			{
 				L = 2;
 			}
@@ -227,8 +314,12 @@ startLoop(char * fileName)
 			}
 
 			2opresult = checkTwoOperands(buf+j, op1name, op2name);
-
-			if(2opresult % 10 == 2 && 2opresult > 40) 	/* both operands are registers: they require only 1 word */
+			if(2opresult < 10)
+			{
+				/* error: error in operand info */
+				/* ADD ERROR HANDLING */
+			}
+			if(2opresult == 42) 	/* both operands are registers: they require only 1 word */
 			{
 				L = 2;
 			}
@@ -255,13 +346,17 @@ startLoop(char * fileName)
 			}
 
 			2opresult = checkTwoOperands(buf+j, op1name, op2name);
-			if(2opresult % 10 == 1)
+			if(2opresult < 10)
+			{
+				/* error: error in operand info */
+				/* ADD ERROR HANDLING */
+			}
+			else if(2opresult % 10 == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'add' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-
-			if(2opresult % 10 == 2 && 2opresult > 40) 	/* both operands are registers: they require only 1 word */
+			if(2opresult == 42) 	/* both operands are registers: they require only 1 word */
 			{
 				L = 2;
 			}
@@ -288,13 +383,18 @@ startLoop(char * fileName)
 			}
 
 			2opresult = checkTwoOperands(buf+j, op1name, op2name);
-			if(2opresult % 10 == 1)
+			if(2opresult < 10)
+			{
+				/* error: error in operand info */
+				/* ADD ERROR HANDLING */
+			}
+			else if(2opresult % 10 == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'sub' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-
-			if(2opresult % 10 == 2 && 2opresult > 40) 	/* both operands are registers: they require only 1 word */
+			
+			else if(2opresult == 42) 	/* both operands are registers: they require only 1 word */
 			{
 				L = 2;
 			}
@@ -385,11 +485,22 @@ startLoop(char * fileName)
 			}
 
 			2opresult = checkTwoOperands(buf+j, op1name, op2name);
-			if(2opresult < 30 ) 
+			if(2opresult < 10)
+			{
+				/* error: error in operand info */
+				/* ADD ERROR HANDLING */
+			}
+			else if(2opresult % 10 == 1)
+			{
+				/* error: destination operand is using illegal address method for command 'lea' (immediate) */
+				/* ADD ERROR HANDLING */
+			}
+			else if(2opresult < 30 ) 
 			{
 				/* error: origin operand is using illegal address methods for command 'lea' (immediate or register) */
 				/* ADD ERROR HANDLING */
 			}
+
 			L = 3; /* 'lea' command can't use 2 registers, so it always requires 3 word lines */
 
 			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10));
