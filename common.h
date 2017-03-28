@@ -20,6 +20,11 @@
 /*------------------- String constants -------------------*/
 
 #define COMMENT_SIGN ';'
+#define STRING_SIGN '"'
+#define DATA_WORD ".data"
+#define STRING_WORD ".string"
+#define ENTRY_WORD ".entry"
+#define EXTERN_WORD ".extern"
 #define NEWLINE '\n'
 #define LABEL_FLAG ':'
 #define STR_FLAG '"'
@@ -50,26 +55,192 @@ int checkCMD(char *)
 /*------------------- Code Structure -------------------*/
 typedef struct code
 {
-	char * command;
+	int position;
+	int command;
 	char * operand1;
 	char * operand2;
-	int position;
-	act_inst type;
-	*cod next;
+	int op1addressMethod;
+	int op2addressMethod;
+	cod * next;
 }cod;
 
 
+cod _codhead = NULL;
+
+
+/* create new data link of code and return a pointer to it */
+cod * createCod(int position, int command, char * operand1, char * operand2, int op1addressMethod, int op2addressMethod)
+{
+	cod * newCod = (cod *)malloc(sizeof(cod));
+	if(newCod = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+	newCod->position = position;
+	newCod->command = command;
+	newCod->operand1 = operand1;
+	newCod->operand2 = operand2;
+	newCod->op1addressMethod = op1addressMethod;
+	newCod->op2addressMethod = op2addressMethod;
+	newCod->next = NULL;
+
+	return newCod; 
+}
+
+/* add new code to the list */
+void addCodeNode(cod newCod)
+{
+   if(_codhead == NULL)
+   {
+	_codhead = newCod;
+	newCod->next = NULL;
+   }
+
+   else
+   {
+	cod temp = _codhead;
+	while(temp->next!=NULL)
+		temp = temp->next;
+	
+	temp->next = newCod;
+   }
+   return;	
+}
+
+/* free memory allocation of codes */
+void freeCodeList()
+{
+   cod temp = _codhead;
+   while(_codhead != NULL)
+   {
+	_codhead = _codhead->next;
+	free(temp);
+	temp=_codhead;
+   }	
+}
+
+/* get the Label at the list code table */
+int getLabel(char* labelName)
+{
+   int count = 0;
+   cod temp = _codhead;
+   while(_codhead != NULL)
+   {
+	if(strcmp(labelName, temp->name) == 0)
+	   return count;
+
+	else
+	{
+	   count++;
+	   temp = temp->next;
+	}
+   }
+   return -1;
+}
+
+/* get the address of a specific code line by it's position in the list */
+char* getAddress(int position)	
+{
+   cod temp = _codhead;
+   int count = 0;
+   while(count < position)
+	temp = temp->next;
+
+   return temp->address;
+}
 
 /*------------------- Data Structure -------------------*/
 typedef enum{string,data}str_dat;
 typedef struct data
 {
-	char * name;
 	int position;
+	char * name;
 	str_data type;
 	*dat next;
 }dat;
 
+dat _dathead = NULL;
+
+
+/* create new data link of data and return a pointer to it */
+dat * createDat(int position, char * name, str_data type)
+{
+	dat * newDat = (dat *)malloc(sizeof(dat));
+	if(newDat = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+	newDat->position = position;
+	newDat->name = name;
+	newSym->type = type;
+	newSym->next = NULL;
+
+	return newDat; 
+}
+
+/* add new data line to the list */
+void addData(dat newDat)
+{
+   if(_dathead == NULL)
+   {
+	_dathead = newDat;
+	newDat->next = NULL;
+   }
+
+   else
+   {
+	dat temp = _dathead;
+	while(temp->next!=NULL)
+		temp = temp->next;
+	
+	temp->next = newDat;
+   }
+   return;	
+}
+
+/* free memory allocation of data list */
+void freeDataList()
+{
+   dat temp = _dathead;
+   while(_dathead != NULL)
+   {
+	_dathead = _dathead->next;
+	free(temp);
+	temp=_dathead;
+   }	
+}
+
+/* get the position of the data in the data list */
+int getData(char* dataName)
+{
+   int count = 0;
+   dat temp = _dathead;
+   while(_dathead != NULL)
+   {
+	if(strcmp(dataName, temp->name) == 0)
+	   return count;
+
+	else
+	{
+	   count++;
+	   temp = temp->next;
+	}
+   }
+   return -1;
+}
+
+/* get the address of a specific data line by it's position in the list */
+char * getAddress(int position)	
+{
+   dat temp = _dathead;
+   int count = 0;
+   while(count < position)
+	temp = temp->next;
+
+   return temp->address;
+}
 
 
 /*------------------- Symbols Structure -------------------*/
@@ -80,15 +251,21 @@ typedef struct symbols
 	int address;			/* the address of the lable */
 	bool isExtern;			/* extern = true, not extern = false */
 	act_inst type;			/* action or instruction statment flag */
+	sym * next;			/* next symbol in the linkedlist */
 }sym;
 
-sym _head = NULL;
+sym _symhead = NULL;
 
 
 /* create new data link of symbol and return a pointer to it */
-sym * createSym(char * name, char * add, bool isExt, act_inst type)
+sym * createSym(char * name, int add, bool isExt, act_inst type)
 {
 	sym * newSym = (sym *)malloc(sizeof(sym));
+	if(newSym = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
 	newSym->name = name;
 	newSym->address = add;
 	newSym->isExtern = isExt;
@@ -101,15 +278,15 @@ sym * createSym(char * name, char * add, bool isExt, act_inst type)
 /* add new symbol to the list */
 void addSymbol(sym newSym)
 {
-   if(_head == NULL)
+   if(_symhead == NULL)
    {
-	_head = newSym;
+	_symhead = newSym;
 	newSym->next = NULL;
    }
 
    else
    {
-	sym temp = _head;
+	sym temp = _symhead;
 	while(temp->next!=NULL)
 		temp = temp->next;
 	
@@ -121,12 +298,12 @@ void addSymbol(sym newSym)
 /* free memory allocation of symbols */
 void freeSymbolList()
 {
-   sym temp = _head;
-   while(_head != NULL)
+   sym temp = _symhead;
+   while(_symhead != NULL)
    {
-	_head = head->next;
+	_symhead = _symhead->next;
 	free(temp);
-	temp=_head;
+	temp=_symhead;
    }	
 }
 
@@ -134,8 +311,8 @@ void freeSymbolList()
 int getLabel(char* labelName)
 {
    int count = 0;
-   sym temp = _head;
-   while(_head != NULL)
+   sym temp = _symhead;
+   while(_symhead != NULL)
    {
 	if(strcmp(labelName, temp->name) == 0)
 	   return count;
@@ -152,7 +329,7 @@ int getLabel(char* labelName)
 /* get the address of a specific symbol by it's position in the list */
 char* getAddress(int position)	
 {
-   sym temp = _head;
+   sym temp = _symhead;
    int count = 0;
    while(count < position)
 	temp = temp->next;
