@@ -19,6 +19,10 @@
 
 /*------------------- String constants -------------------*/
 
+#define SOURCE_FILE .as
+#define OBJ_FILE .ob
+#define EXT_FILE .ext
+#define ENTRY_FILE .ent
 #define COMMENT_SIGN ';'
 #define STRING_SIGN '"'
 #define DATA_WORD ".data"
@@ -42,7 +46,6 @@
 int IC = IC_FIRST_ADDRESS;
 int DC = DC_FIRST_ADDRESS;
 
-typedef enum{"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"}command;
 char ** commands = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"};
 
 /*----------------- Functions Declaration -----------------*/
@@ -340,4 +343,9 @@ char* getAddress(int position)
 }
 
 
-
+/*------------------- Machine Code Structure -------------------*/
+typedef struct machineCode
+{
+	int first_address;
+	int lines;
+}mach;
