@@ -19,6 +19,7 @@ startLoop(char * fileName)
 	char[MAX_LABEL_LENGTH] word;		/* a buffer for the curent word read */
 	char[MAX_LABEL_LENGTH] label;   	/* holds current label if it exists */
 	char[MAX_LABEL_LENGTH] tempWord;	/* a temp buffer to hold a temporary word from buf */
+	int tempNum;				/* a temp int to hold numbers */
 
 	char letter;			
 	int labelpos;			/* label position in line */ 
@@ -141,6 +142,55 @@ startLoop(char * fileName)
 		}
   		if(strncmp(tempWord,DATA_WORD,5) == 0)			/* if the word is ".data" */
 		{
+			j = skipSpaces(tempBuf2+j+5,tempBuf2);		/* find the next word in buf (skipping previous spaces and ".data") */ 
+			if(j == -1)
+			{
+				/* error: line is empty after ".data" */
+				/* ADD ERROR HANDLING */
+			}
+			
+			if(sscanf(tempBuf2, "%d", tempNum) != 0)
+			{
+				if(label_flag)			/* create a data node to hold first number, with the label if it exists */
+				{	
+					newDat = createDat(DC, tempNum, label , data) 	
+					DC++;
+				}
+				else
+				{
+					newDat = createDat(DC, tempNum, "" , data) 	
+					DC++;
+				}
+				while((check = strcspn(tempBuf2,COMMA)) != strlen(tempBuf2)) 	/* as long as there are no more commas (numbers) in line */
+				{
+					j = skipSpaces(tempBuf2+check,tempBuf2);		/* find the next number in buf (skipping previous numbers) */ 
+					if(j == -1)
+					{
+						/* line is empty after previous number */
+						
+					}
+					if(sscanf(tempBuf2, "%d", tempNum) != 0)		/* add the number to data list */
+					{
+						newDat = createDat(DC, tempNum, "" , data) 	
+						DC++;
+					}
+				}
+
+				/* no more commas, there should still be one more number */
+
+				if(sscanf(tempBuf2, "%d", tempNum) != 0)		/* add the number to data list */
+				{
+					newDat = createDat(DC, tempNum, "" , data) 	
+					DC++;
+				}
+				
+			}
+			else 		/* no number after ".data" */
+			{
+				/* error: line is empty after ".data" */
+				/* ADD ERROR HANDLING */
+			}
+			
 			
 		}
 		else if(strncmp(tempWord,STRING_WORD,7) == 0)		/* if the word is ".string" */
@@ -158,7 +208,7 @@ startLoop(char * fileName)
 			}
 			else
 			{
-				if((tempBuf = strchr(tempBuf2[1],STR_FLAG)) != NULL) 	/* find end of string, copy it to tempbuf */
+				if((tempBuf = strchr(tempBuf2[1],STR_FLAG)) != NULL) 	/* find end of string word, copy it to tempbuf */
 				{
 					j = skipSpaces(tempBuf,tempWord);		/* find the next word in buf (skipping previous spaces and ".string") */
 					if(j != -1)
@@ -176,32 +226,27 @@ startLoop(char * fileName)
 				i = 0;
 				if(label_flag)
 				{	
-					newDat = createDat(DC, tempbuf[1+i], label , false, string) 	/* create a data node to hold next letter, with the label if it exists */
+					newDat = createDat(DC, tempbuf[1+i], label, string) 	/* create a data node to hold next letter, with the label if it exists */
 					DC++;
 					i++;
 				}
 				while(tempbuf[1+i] != STR_FLAG)
 				{
-					newDat = createDat(DC, tempbuf[1+i], "" , false, string) 	/* create a data node to hold next letter */
+					newDat = createDat(DC, tempbuf[1+i], "" , string) 	/* create a data node to hold next letter */
 					DC++;
 					i++;
 				}
-				newDat = createDat(DC, 0, "" , false, string) 	/* create a data node of only "0" to signal end of string */
+				newDat = createDat(DC, 0, "" , string) 	/* create a data node of only "0" to signal end of string */
 				DC++;
 								
 			}
 		}
 		else
 		{
-			/* error: word isnt ".data" or ".string" */
+			/* error: first word (after possible label) isnt ".data" or ".string" */
 			/* ADD ERROR HANDLING */
 		}
-		newDat = createDat(DC, , false, instruction) 	/* create a data node with the symbol name */
-		}
-		newDat = createDat(label, DC, false, instruction) 	/* create a data node with the symbol name */
-			 /* ADD MORE CODE */
-			 /* ADD MORE CODE */
-			 /* ADD MORE CODE */
+
 		
 	   }
 		
@@ -232,7 +277,7 @@ startLoop(char * fileName)
 		   }
 		   else
 		   {
-			/* error: label name already exists */
+			/* error: label name already exists in symbol list */
 			/* ADD ERROR HANDLING */
 		   }
 		}		 	
@@ -300,7 +345,15 @@ startLoop(char * fileName)
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   addSymbol(newSym);					/* add the new symbol to the symbol list */
+			   if(getLabel(label) == -1)
+			   {
+				addSymbol(newSym);				/* add the new symbol to the symbol list */
+			   }
+			   else
+			   {
+				/* error: label name already exists in symbol list */
+				/* ADD ERROR HANDLING */				
+			   }
 			}
 			IC += L;
 			
@@ -333,7 +386,15 @@ startLoop(char * fileName)
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   addSymbol(newSym);					/* add the new symbol to the symbol list */
+			   if(getLabel(label) == -1)
+			   {
+				addSymbol(newSym);				/* add the new symbol to the symbol list */
+			   }
+			   else
+			   {
+				/* error: label name already exists in symbol list */
+				/* ADD ERROR HANDLING */				
+			   }
 			}
 			IC += L;
 
@@ -370,7 +431,15 @@ startLoop(char * fileName)
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   addSymbol(newSym);					/* add the new symbol to the symbol list */
+			   if(getLabel(label) == -1)
+			   {
+				addSymbol(newSym);				/* add the new symbol to the symbol list */
+			   }
+			   else
+			   {
+				/* error: label name already exists in symbol list */
+				/* ADD ERROR HANDLING */				
+			   }
 			}
 			IC += L;
 
@@ -408,7 +477,15 @@ startLoop(char * fileName)
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   addSymbol(newSym);					/* add the new symbol to the symbol list */
+			   if(getLabel(label) == -1)
+			   {
+				addSymbol(newSym);				/* add the new symbol to the symbol list */
+			   }
+			   else
+			   {
+				/* error: label name already exists in symbol list */
+				/* ADD ERROR HANDLING */				
+			   }
 			}
 			IC += L;
 
@@ -439,7 +516,15 @@ startLoop(char * fileName)
 		  		if(label_flag)
 				{
 			 	   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			 	   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -471,7 +556,15 @@ startLoop(char * fileName)
 		  		if(label_flag)
 				{
 			  	   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			 	   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -508,7 +601,15 @@ startLoop(char * fileName)
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   addSymbol(newSym);					/* add the new symbol to the symbol list */
+			   if(getLabel(label) == -1)
+			   {
+				addSymbol(newSym);				/* add the new symbol to the symbol list */
+			   }
+			   else
+			   {
+				/* error: label name already exists in symbol list */
+				/* ADD ERROR HANDLING */				
+			   }
 			}
 			IC += L;
 
@@ -539,7 +640,15 @@ startLoop(char * fileName)
 		  		if(label_flag)
 				{
 			 	   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			  	   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -571,7 +680,15 @@ startLoop(char * fileName)
 		  		if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -604,7 +721,15 @@ startLoop(char * fileName)
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -636,7 +761,15 @@ startLoop(char * fileName)
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -668,7 +801,15 @@ startLoop(char * fileName)
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -695,7 +836,15 @@ startLoop(char * fileName)
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -728,7 +877,15 @@ startLoop(char * fileName)
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
 			}
@@ -741,14 +898,37 @@ startLoop(char * fileName)
 		  		if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   addSymbol(newSym);					/* add the new symbol to the symbol list */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
 				}
 				IC += L;
+
 	   	case 15: /* stop */
 			
 				L = 1; /* 'stop' command always requires 1 word */
 				newCod = createCod(IC, cmdNUM, "", "", 0, 0);
 				addCodeNode(newCod);
+		  		if(label_flag)
+				{
+				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
+				   if(getLabel(label) == -1)
+				   {
+				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
+				   }
+				   else
+				   {
+					/* error: label name already exists in symbol list */
+					/* ADD ERROR HANDLING */				
+				   }
+				}
+			 	IC += L;
 
 		default: /* if not a command, or error */
 
