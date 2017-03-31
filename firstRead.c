@@ -20,6 +20,7 @@ startLoop(char * fileName)
 	char[MAX_LABEL_LENGTH] label;   	/* holds current label if it exists */
 	char[MAX_LABEL_LENGTH] tempWord;	/* a temp buffer to hold a temporary word from buf */
 	int tempNum;				/* a temp int to hold numbers */
+	char[MAX_LABEL_LENGTH] sourceFile;
 
 	char letter;			
 	int labelpos;			/* label position in line */ 
@@ -31,9 +32,12 @@ startLoop(char * fileName)
 	int check;
 	int L; 				/* the number of words required by the line */
 
-	strcat(fileName,SOURCE_FILE);	/* add ".as" to the end of the filename, to address to the proper file */
+
+
+	strcpy(sourceFile,fileName);	
+	strcat(sourceFile,SOURCE_FILE);	/* add ".as" to the end of the filename, to address to the proper file */
 	
-	fp = fopen(fileName, "r");
+	fp = fopen(sourceFile, "r");
 
 	if(!fp)
 	{
