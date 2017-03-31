@@ -31,6 +31,8 @@ startLoop(char * fileName)
 	int check;
 	int L; 				/* the number of words required by the line */
 
+	strcat(fileName,SOURCE_FILE);	/* add ".as" to the end of the filename, to address to the proper file */
+	
 	fp = fopen(fileName, "r");
 
 	if(!fp)
