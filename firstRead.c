@@ -183,6 +183,11 @@ startLoop(char * fileName)
 					newDat = createDat(DC, tempNum, "" , data) 	
 					DC++;
 				}
+				else
+				{
+					/* error: no number after las comma */
+					/* ADD ERROR HANDLING */
+				}
 				
 			}
 			else 		/* no number after ".data" */
