@@ -291,7 +291,8 @@ startLoop(char * fileName)
 			/* error: label name already exists in symbol list */
 			/* ADD ERROR HANDLING */
 		   }
-		}		 	
+		}
+			 	
 	   }
 		
 	   /* step 11 in algorithm */
