@@ -16,11 +16,13 @@ startLoop(char * fileName)
 	char[MAX_BUF] buf;			/* a buffer to hold the current line read */
 	char[MAX_BUF] tempBuf;			/* a temp buffer to hold a part of buf temporarily */
 	char[MAX_BUF] tempBuf2;			/* another temp buffer to hold a part of buf temporarily */
-	char[MAX_LABEL_LENGTH] word;		/* a buffer for the curent word read */
+	char[MAX_BUF] tempLabel;		/* a buffer for holding potential label name */
 	char[MAX_LABEL_LENGTH] label;   	/* holds current label if it exists */
 	char[MAX_LABEL_LENGTH] tempWord;	/* a temp buffer to hold a temporary word from buf */
 	int tempNum;				/* a temp int to hold numbers */
 	char[MAX_LABEL_LENGTH] sourceFile;
+	int code_length;
+	int data_length;
 
 	char letter;			
 	int labelpos;			/* label position in line */ 
@@ -50,7 +52,7 @@ startLoop(char * fileName)
 	   lineNum++;
 	   /* check for empty or comment line */
 	   j = 0; /* reset index j before check */
-	   if((j = skipSpaces(buf,word)) == -1)
+	   if((j = skipSpaces(buf,tempWord)) == -1)
 	   {
 		/* empty line */
 		break;
@@ -69,27 +71,28 @@ startLoop(char * fileName)
 	   
 	   if((labelpos = strchr(buf,LABEL_SIGN)) != NULL) 	 /* checks if the line contains a label */
 	   {
-		sscanf(buf, " %s", &word);
+		sscanf(buf, " %s", &tempLabel);
 		
 		/* checks for valid label */
-		if(strchr(word,LABEL_SIGN) == NULL)
+		if(strchr(tempLabel,STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
 		{
-		    /* error, ':' is not part of label */
-		    /* ADD ERROR HANDLING */
-		}
-		else if(strchr(word,STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
-		{
-		   check = strcspn(word,LABEL_SIGN);					/* find the location of ':' */
-		   strncpy(tempWord,word,length);					/* copy the part of the word before ':' into tempWord, to check */
+		   check = strcspn(tempLabel,LABEL_SIGN);				/* find the location of ':' */
+		   strncpy(tempWord,tempLabel,length);					/* copy the part of the word before ':' into tempWord, to check */
 		   if(strchr(tempWord,STRING_SIGN) == strrchr(tempWord,STRING_SIGN))	/* check that only one '"' exists before ':' */
 		   {
-			if(strchr(word+check,LABEL_SIGN) != NULL)
+			if(strchr(tempLabel+check,LABEL_SIGN) != NULL)
 			{
 			   break;		/* we have found that ':' is between two '"'s so it's not part of a label, but part of a string */
 			}
 
 		   }
 		}
+		else if(strchr(tempLabel,LABEL_SIGN) == NULL)
+		{
+		    /* error, ':' is not part of label */
+		    /* ADD ERROR HANDLING */
+		}
+
 		if(isalpha(letter)==0)
 		{
 		    /* error, first letter is not a real letter */
@@ -103,7 +106,7 @@ startLoop(char * fileName)
 		}
 		
 		label_flag = true;
-		strncpy(label,word,(strlen(word)-1));			/* copy label name to label string, without the ":" at the end */
+		strncpy(label,tempLabel,(strlen(tempLabel)-1));			/* copy label name to label string, without the ":" at the end */
 
 	   }
 
@@ -157,14 +160,16 @@ startLoop(char * fileName)
 			
 			if(sscanf(tempBuf2, "%d", tempNum) != 0)
 			{
-				if(label_flag)			/* create a data node to hold first number, with the label if it exists */
+				if(label_flag)				/* create a data node to hold first number, with the label if it exists */
 				{	
-					newDat = createDat(DC, tempNum, label , data) 	
+					newDat = createDat(DC, tempNum, label , data);
+					addData(newDat);	
 					DC++;
 				}
 				else
 				{
-					newDat = createDat(DC, tempNum, "" , data) 	
+					newDat = createDat(DC, tempNum, "" , data);
+					addData(newDat); 	
 					DC++;
 				}
 				while((check = strcspn(tempBuf2,COMMA)) != strlen(tempBuf2)) 	/* as long as there are no more commas (numbers) in line */
@@ -177,7 +182,8 @@ startLoop(char * fileName)
 					}
 					if(sscanf(tempBuf2, "%d", tempNum) != 0)		/* add the number to data list */
 					{
-						newDat = createDat(DC, tempNum, "" , data) 	
+						newDat = createDat(DC, tempNum, "" , data);
+						addData(newDat); 	
 						DC++;
 					}
 				}
@@ -186,7 +192,8 @@ startLoop(char * fileName)
 
 				if(sscanf(tempBuf2, "%d", tempNum) != 0)		/* add the number to data list */
 				{
-					newDat = createDat(DC, tempNum, "" , data) 	
+					newDat = createDat(DC, tempNum, "" , data);
+					addData(newDat); 	
 					DC++;
 				}
 				else
@@ -238,16 +245,19 @@ startLoop(char * fileName)
 				if(label_flag)
 				{	
 					newDat = createDat(DC, tempbuf[1+i], label, string) 	/* create a data node to hold next letter, with the label if it exists */
+					addData(newDat);
 					DC++;
 					i++;
 				}
 				while(tempbuf[1+i] != STR_FLAG)
 				{
 					newDat = createDat(DC, tempbuf[1+i], "" , string) 	/* create a data node to hold next letter */
+					addData(newDat);
 					DC++;
 					i++;
 				}
 				newDat = createDat(DC, 0, "" , string) 	/* create a data node of only "0" to signal end of string */
+				addData(newDat);
 				DC++;
 								
 			}
@@ -946,11 +956,19 @@ startLoop(char * fileName)
 
 			/* ADD ERROR HANDLING */
 	   }
+
+	lineNum++;
+	
+	/* end of reading current line */
 	
 	 
-	}
+	} /* end of while loop that reads each line */
 
-	/* merge code table with data table */
+	code_length = IC;
+	data_length = DC;
+
+	updateSymbolAdress(IC);
+	
 }
 
 int skipSpaces(char * str, char * toWord)	/* a function for "skipping" spaces in a given string */
