@@ -209,15 +209,24 @@ void errorFunction(String sourceFile int lineNum, int errorCode)
 
 /*------------------- -------------------*/
 
-
 /* check if a given string is a command. 
  * return its number if it is, or -1 if it's not */
 int checkCMD(char * toCheck)
 {
    int i;
    for(i = 0; i<COMMANDS_NUMBER; i++)
-	if(strncmp(commands[i],toCheck,3) == 0)
-		return i;
+   {
+	if(i == 15) 	/* for command "stop" we need to check 4 letters instead of 3 */
+	{
+		if(strncmp(commands[i],toCheck,4) == 0)
+			return i;
+	}
+	else
+	{
+		if(strncmp(commands[i],toCheck,3) == 0)
+			return i;
+	}
+   }
 
    return -1;
 }
