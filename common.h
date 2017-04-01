@@ -143,14 +143,13 @@ int getLabel(char* labelName)
 }
 
 /* get the address of a specific code line by it's position in the list */
-char* getAddress(int position)	
+cod * getCodeInfo(int position)	
 {
    cod temp = _codhead;
-   int count = 0;
-   while(count < position)
-	temp = temp->next;
-
-   return temp->address;
+   while (temp!= NULL)
+   {
+	if(temp->
+   }
 }
 
 /*------------------- Data Structure -------------------*/
@@ -236,26 +235,15 @@ int getData(char* dataName)
    return -1;
 }
 
-/* get the address of a specific data line by it's position in the list */
-char * getAddress(int position)	
-{
-   dat temp = _dathead;
-   int count = 0;
-   while(count < position)
-	temp = temp->next;
-
-   return temp->address;
-}
-
 
 /*------------------- Symbols Structure -------------------*/
 typedef enum{action,instruction}act_inst;
 typedef struct symbols
 {
 	char name[MAX_LABLE_LENGTH];	/* the name of the lable */
-	int address;			/* the address of the lable */
+	int address;			/* the address of the label */
 	bool isExtern;			/* extern = true, not extern = false */
-	act_inst type;			/* action or instruction statment flag */
+	act_inst type;			/* action or instruction statement flag */
 	sym * next;			/* next symbol in the linkedlist */
 }sym;
 
@@ -332,7 +320,7 @@ int getLabel(char* labelName)
 }
 
 /* get the address of a specific symbol by it's position in the list */
-char* getAddress(int position)	
+int getSymbolAddress(int position)	
 {
    sym temp = _symhead;
    int count = 0;
@@ -342,10 +330,94 @@ char* getAddress(int position)
    return temp->address;
 }
 
+/* update the address of the internal declared symbols at the end of the first read */
+void updateSymbolAdress(int IC)
+{
+   sym temp = _symhead;
+   while(temp != NULL)
+   {
+	if((temp->act_inst == instruction) && (temp->isExtern == false))
+	{
+	   temp->address += IC;
+	}
+	temp = temp->next;
+   }
+}
+
+
 
 /*------------------- Machine Code Structure -------------------*/
 typedef struct machineCode
 {
-	int first_address;
-	int lines;
+	int address;
+	int[WORD_LENGTH] code_array;
+	mach * next;
 }mach;
+
+mach _machhead = NULL;
+
+
+/* create new data link of symbol and return a pointer to it */
+mach * createMach(int address, )
+{
+	int i;
+	mach * newMach = (mach *)malloc(sizeof(mach));
+	if(newMach = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+
+	for(i=0;i<WORD_LENGTH;i++)	/* reset each initial code word to 0*/
+	{
+	   newMach->code_array[i] = 0;	
+	}
+
+	newMach->address = address;
+	newMach->next = NULL;
+
+	return newMach; 
+}
+
+/* add new symbol to the list */
+void addMachCode(mach newMach)
+{
+   if(_machhead == NULL)
+   {
+	_machhead = newMach;
+	newMach->next = NULL;
+   }
+
+   else
+   {
+	mach temp = _machhead;
+	while(temp->next!=NULL)
+		temp = temp->next;
+	
+	temp->next = newMach;
+   }
+   return;	
+}
+
+/* free memory allocation of symbols */
+void freeMachList()
+{
+   mach temp = _machhead;
+   while(_machhead != NULL)
+   {
+	_machhead = _machhead->next;
+	free(temp);
+	temp=_machhead;
+   }	
+}
+
+/* get the address of a specific symbol by it's position in the list */
+char* getAddress(int position)	
+{
+   mach temp = _machhead;
+   int count = 0;
+   while(count < position)
+	temp = temp->next;
+
+   return temp->address;
+}
