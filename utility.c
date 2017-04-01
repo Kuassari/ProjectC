@@ -209,8 +209,9 @@ void errorFunction(String sourceFile int lineNum, int errorCode)
 
 /*------------------- -------------------*/
 
-/* check if a given string is a command. 
- * return its number if it is, or -1 if it's not */
+
+/* check if a given string is a command */
+/* return its number if it is, or -1 if it's not */
 int checkCMD(char * toCheck)
 {
    int i;
@@ -229,4 +230,34 @@ int checkCMD(char * toCheck)
    }
 
    return -1;
+}
+
+/* Convert a decimal number to a binary number (in array) */
+void cnvrtToBIN(int decimal, int binary[], int WORD_LENGTH){
+
+   long int quotient;
+   int i=0;
+   quotient = decimal;
+
+   while (i < WORD_LENGTH)
+   {
+	binary[i++]= 0;			/* reset binary number to 0 */
+   }
+   i=0;
+
+   while(quotient != 0)			
+   {
+	binary[i]= quotient % 2;	/* set digit i to 0 or 1 */
+	quotient = quotient / 2;	/* divide quotient by 2 to get next digit */
+	i++;
+   }
+
+   if(quotient == 0)
+   {
+	while(i<WORD_LENGTH)		/* fill remaining digits with 0's */
+	{
+	    binary[i]= 0;
+	    i++;
+	}
+   }
 }
