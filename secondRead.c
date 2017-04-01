@@ -16,7 +16,7 @@ endLoop(char * fileName)
 	char[MAX_BUF] buf;			/* a buffer to hold the current line read */
 	char[MAX_BUF] tempBuf;			/* a temp buffer to hold a part of buf temporarily */
 	char[MAX_BUF] tempBuf2;			/* another temp buffer to hold a part of buf temporarily */
-	char[MAX_LABEL_LENGTH] word;		/* a buffer for the curent word read */
+	char[MAX_BUF] tempLabel;		/* a buffer for holding potential label name */
 	char[MAX_LABEL_LENGTH] label;   	/* holds current label if it exists */
 	char[MAX_LABEL_LENGTH] tempWord;	/* a temp buffer to hold a temporary word from buf */
 	char[MAX_LABEL_LENGTH] sourceFile;
@@ -34,6 +34,7 @@ endLoop(char * fileName)
 	char * op2name;
 	int check;
 	int L; 					/* the number of words required by the line */
+	int address;				/* hold address of current symbol\entry\extern word */
 
 	strcpy(sourceFile,fileName);	
 	strcpy(objFile,fileName);	
@@ -47,9 +48,9 @@ endLoop(char * fileName)
 	strcat(extFile,EXT_FILE);		/* add ".ext" to the end of the filename, to address to the proper file */
 	
 	fp = fopen(sourceFile, "r");
-
-
-
+	fob = fopen(objFileFile, "a");
+	fent = fopen(entFileFile, "a");
+	fext = fopen(extFileFile, "a");
 
 	if(!fp)
 	{
@@ -62,7 +63,7 @@ endLoop(char * fileName)
 	   lineNum++;
 	   /* check for empty or comment line */
 	   j = 0; /* reset index j before check */
-	   if((j = skipSpaces(buf,word)) == -1)
+	   if((j = skipSpaces(buf,tempWord)) == -1)
 	   {
 		/* empty line */
 		break;
@@ -81,27 +82,28 @@ endLoop(char * fileName)
 	   
 	   if((labelpos = strchr(buf,LABEL_SIGN)) != NULL) 	 /* checks if the line contains a label */
 	   {
-		sscanf(buf, " %s", &word);
+		sscanf(buf, " %s", &tempLabel);
 		
 		/* checks for valid label */
-		if(strchr(word,LABEL_SIGN) == NULL)
+		if(strchr(tempLabel,STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
 		{
-		    /* error, ':' is not part of label */
-		    /* ADD ERROR HANDLING */
-		}
-		else if(strchr(word,STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
-		{
-		   check = strcspn(word,LABEL_SIGN);					/* find the location of ':' */
-		   strncpy(tempWord,word,length);					/* copy the part of the word before ':' into tempWord, to check */
+		   check = strcspn(tempLabel,LABEL_SIGN);				/* find the location of ':' */
+		   strncpy(tempWord,tempLabel,length);					/* copy the part of the word before ':' into tempWord, to check */
 		   if(strchr(tempWord,STRING_SIGN) == strrchr(tempWord,STRING_SIGN))	/* check that only one '"' exists before ':' */
 		   {
-			if(strchr(word+check,LABEL_SIGN) != NULL)
+			if(strchr(tempLabel+check,LABEL_SIGN) != NULL)
 			{
 			   break;		/* we have found that ':' is between two '"'s so it's not part of a label, but part of a string */
 			}
 
 		   }
 		}
+		else if(strchr(tempLabel,LABEL_SIGN) == NULL)
+		{
+		    /* error, ':' is not part of label */
+		    /* ADD ERROR HANDLING */
+		}
+
 		if(isalpha(letter)==0)
 		{
 		    /* error, first letter is not a real letter */
@@ -115,7 +117,7 @@ endLoop(char * fileName)
 		}
 		
 		label_flag = true;
-		strncpy(label,word,(strlen(word)-1));			/* copy label name to label string, without the ":" at the end */
+		strncpy(label,tempLabel,(strlen(tempLabel)-1));		/* copy label name to label string, without the ":" at the end */
 
 	   }
 
@@ -123,154 +125,10 @@ endLoop(char * fileName)
 	   {
 	     	label_flag = false;
 	   }
-
+	
 	   if(strstr(buf,DATA_WORD) != NULL || strstr(buf,STRING_WORD) != NULL)
 	   {
-		/* step 6+7 in algorithm */  
-
-		j = skipSpaces(buf,tempWord);			/* find the first word in line */
-		if(j == -1)
-		{
-			/* error: no more letters in line */
-			/* ADD ERROR HANDLING */
-		}
-		strcpy(tempBuf2,buf+j);				/* copy buf (without first spaces) to tempBuf2 (will be recopied if buf has a label) */	
-	
-		if(label_flag)					/* if label exists */
-		{	
-		   check = strcspn(buf+j,SPACE);			/* find the end of label name */
-		   strncpy(tempBuf,buf+j,check-1);			/* copy the label name to tempbuf, without spaces and ":" */
-		   strcpy(tempBuf2,buf+check+j);			/* copy the rest of buf to tempBuf2 */
-		   newSym = createSym(tempBuf, DC, false, instruction);	/* create a symbol with the label name */
-		   if(getLabel(tempBuf) == -1)				/* check that a label with the same name doesn't exist already */
-		   {
-		   	addSymbol(newSym);				/* add the new external symbol to the symbol list */
-		   }
-		   else
-		   {
-			/* error: label name already exists */
-			/* ADD ERROR HANDLING */
-		   }		
-		}
-		j = skipSpaces(tempBuf2,tempWord);			/* find the next word in tempBuf2 (should be ".string" or ".data") */
-		if(j == -1)
-		{
-			/* error: line is empty (after label name if there was label) */
-			/* ADD ERROR HANDLING */
-		}
-  		if(strncmp(tempWord,DATA_WORD,5) == 0)			/* if the word is ".data" */
-		{
-			j = skipSpaces(tempBuf2+j+5,tempBuf2);		/* find the next word in buf (skipping previous spaces and ".data") */ 
-			if(j == -1)
-			{
-				/* error: line is empty after ".data" */
-				/* ADD ERROR HANDLING */
-			}
-			
-			if(sscanf(tempBuf2, "%d", tempNum) != 0)
-			{
-				if(label_flag)			/* create a data node to hold first number, with the label if it exists */
-				{	
-					newDat = createDat(DC, tempNum, label , data) 	
-					DC++;
-				}
-				else
-				{
-					newDat = createDat(DC, tempNum, "" , data) 	
-					DC++;
-				}
-				while((check = strcspn(tempBuf2,COMMA)) != strlen(tempBuf2)) 	/* as long as there are no more commas (numbers) in line */
-				{
-					j = skipSpaces(tempBuf2+check,tempBuf2);		/* find the next number in buf (skipping previous numbers) */ 
-					if(j == -1)
-					{
-						/* line is empty after previous number */
-						
-					}
-					if(sscanf(tempBuf2, "%d", tempNum) != 0)		/* add the number to data list */
-					{
-						newDat = createDat(DC, tempNum, "" , data) 	
-						DC++;
-					}
-				}
-
-				/* no more commas, there should still be one more number */
-
-				if(sscanf(tempBuf2, "%d", tempNum) != 0)		/* add the number to data list */
-				{
-					newDat = createDat(DC, tempNum, "" , data) 	
-					DC++;
-				}
-				else
-				{
-					/* error: no number after las comma */
-					/* ADD ERROR HANDLING */
-				}
-				
-			}
-			else 		/* no number after ".data" */
-			{
-				/* error: line is empty after ".data" */
-				/* ADD ERROR HANDLING */
-			}
-			
-			
-		}
-		else if(strncmp(tempWord,STRING_WORD,7) == 0)		/* if the word is ".string" */
-		{
-			j = skipSpaces(tempBuf2+j+7,tempBuf2);		/* find the next word in buf (skipping previous spaces and ".string") */
-			if(j == -1)
-			{
-				/* error: line is empty after ".string" */
-				/* ADD ERROR HANDLING */
-			}
-			if(tempBuf2[0] != STR_FLAG)
-			{
-				/* error: next word is not a string */
-				/* ADD ERROR HANDLING */
-			}
-			else
-			{
-				if((tempBuf = strchr(tempBuf2[1],STR_FLAG)) != NULL) 	/* find end of string word, copy it to tempbuf */
-				{
-					j = skipSpaces(tempBuf,tempWord);		/* find the next word in buf (skipping previous spaces and ".string") */
-					if(j != -1)
-					{
-						/* error: line isn't empty after the string */
-						/* ADD ERROR HANDLING */
-					}
-				}
-				else
-				{
-					/* error: no closing '"' for the string */
-					/* ADD ERROR HANDLING */
-				}
-
-				i = 0;
-				if(label_flag)
-				{	
-					newDat = createDat(DC, tempbuf[1+i], label, string) 	/* create a data node to hold next letter, with the label if it exists */
-					DC++;
-					i++;
-				}
-				while(tempbuf[1+i] != STR_FLAG)
-				{
-					newDat = createDat(DC, tempbuf[1+i], "" , string) 	/* create a data node to hold next letter */
-					DC++;
-					i++;
-				}
-				newDat = createDat(DC, 0, "" , string) 	/* create a data node of only "0" to signal end of string */
-				DC++;
-								
-			}
-		}
-		else
-		{
-			/* error: first word (after possible label) isnt ".data" or ".string" */
-			/* ADD ERROR HANDLING */
-		}
-
-		
+		/* skip this line */
 	   }
 		
 	   if(strstr(buf,ENTRY_WORD) != NULL || strstr(buf,EXTERN_WORD) != NULL)
@@ -293,18 +151,57 @@ endLoop(char * fileName)
 			/* error: line isn't empty after external symbol name */
 			/* ADD ERROR HANDLING */
 		   }
-		   newSym = createSym(tempBuf2, 0, true, instruction);	/* create a symbol with the external symbol name */
-		   if(getLabel(tempBuf2) == -1)				/* check that a label with the same name doesn't exist already */
+		   if(getLabel(tempBuf2) != -1)			/* make sure external word is in symbol list */
 		   {
-		   	addSymbol(newSym);				/* add the new external symbol to the symbol list */
+			address = getSymbolAddress(check);	/* get the address of label name*/
+
+			/* convert address to hexadecimal */
+
+			fprintf(fext, address, tempBuf2);	/* write the label name and its address (in hexa) to external labels file */
 		   }
 		   else
 		   {
-			/* error: label name already exists in symbol list */
+			/* error: label name doesn't exist in label list */
 			/* ADD ERROR HANDLING */
 		   }
-		}		 	
+		}
+		else if(strstr(buf,ENTY_WORD) != NULL)		/* if it's entry instruction */	
+		{
+		   j = skipSpaces(tempBuf,tempBuf);		/* check that line isn't empty after ".entry" */
+		   if(j == -1)
+		   {
+			/* error: no more letters in line */
+			/* ADD ERROR HANDLING */
+		   }	
+		   check = strcspn(tempBuf,SPACE);		/* find the end of entry symbol name */
+		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempbuf2, without spaces and ":" */			
+		   j = skipSpaces(tempBuf,tempWord);
+		   if(j != -1)
+		   {
+			/* error: line isn't empty after entry symbol name */
+			/* ADD ERROR HANDLING */
+		   }
+		   if(getLabel(tempBuf2) != -1)			/* make sure entry word is in symbol list */
+		   {
+			address = getSymbolAddress(check);	/* get the address of label name*/
+
+			/* convert address to hexadecimal */
+
+			fprintf(fent, address, tempBuf2);	/* write the label name and its address (in hexa) to entry labels file */
+		   }
+		   else
+		   {
+			/* error: label name doesn't exist in label list */
+			/* ADD ERROR HANDLING */
+		   }
+		}	 	
 	   }
+	
+	i = 0;
+	while(i<code_length)
+	{
+	
+	}
 		
 	   /* step 11 in algorithm */
 
