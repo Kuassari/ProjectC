@@ -7,15 +7,23 @@
 
 /*------------------- Constant Variables -------------------*/
 
-#define IC_FIRST_ADDRESS       100
-#define DC_FIRST_ADDRESS       0
-#define MAX_DATA_SIZE          1000
-#define MAX_BUF                80
-#define MAX_FILENAME           32
-#define MAX_LABEL_LENGTH       30
-#define WORD_LENGTH            15
-#define MAX_REGISTER_DIGIT     7
-#define BYTE_SIZE	       8
+#define IC_FIRST_ADDRESS       	100
+#define DC_FIRST_ADDRESS       	0
+#define MAX_DATA_SIZE          	1000
+#define MAX_BUF                	80
+#define MAX_FILENAME           	32
+#define MAX_LABEL_LENGTH       	30
+#define WORD_LENGTH           	15
+#define MAX_REGISTER_DIGIT     	7
+#define BYTE_SIZE	       	8
+#define ZERO_SIZE		1
+#define UNUSED_SIZE		3
+#define GROUP_SIZE		2
+#define OPCODE_SIZE		4
+#define OPERAND_SIZE		2
+#define ERA_SIZE		2
+
+
 
 /*------------------- String constants -------------------*/
 
@@ -58,12 +66,13 @@ int checkCMD(char *)
 /*------------------- Code Structure -------------------*/
 typedef struct code
 {
-	int position;
+	int address;
 	int command;
 	char * operand1;
 	char * operand2;
 	int op1addressMethod;
 	int op2addressMethod;
+	int lineNum;
 	cod * next;
 }cod;
 
@@ -72,7 +81,7 @@ cod _codhead = NULL;
 
 
 /* create new data link of code and return a pointer to it */
-cod * createCod(int position, int command, char * operand1, char * operand2, int op1addressMethod, int op2addressMethod)
+cod * createCod(int address, int command, char * operand1, char * operand2, int op1addressMethod, int op2addressMethod, int lineNum)
 {
 	cod * newCod = (cod *)malloc(sizeof(cod));
 	if(newCod = NULL)
@@ -80,12 +89,13 @@ cod * createCod(int position, int command, char * operand1, char * operand2, int
 	   /* error: not enough memory */
 	   /* ADD ERROR HANDLING */
 	}
-	newCod->position = position;
+	newCod->address = address;
 	newCod->command = command;
 	newCod->operand1 = operand1;
 	newCod->operand2 = operand2;
 	newCod->op1addressMethod = op1addressMethod;
 	newCod->op2addressMethod = op2addressMethod;
+	newCod->lineNum = lineNum;
 	newCod->next = NULL;
 
 	return newCod; 
@@ -123,35 +133,35 @@ void freeCodeList()
    }	
 }
 
-/* get the Label at the list code table */
-int getLabel(char* labelName)
-{
-   int count = 0;
-   cod temp = _codhead;
-   while(_codhead != NULL)
-   {
-	if(strcmp(labelName, temp->name) == 0)
-	   return count;
-
-	else
-	{
-	   count++;
-	   temp = temp->next;
-	}
-   }
-   return -1;
-}
-
-/* get the address of a specific code line by it's position in the list */
-cod * getCodeInfo(int position)	
+/* get the info of a specific code line by it's address, or NULL for error */
+cod * getCodeInfo(int address)	
 {
    cod temp = _codhead;
    while (temp!= NULL)
    {
-	if(temp->
+	if(temp->address == address)
+		return temp;
+	else
+		temp = temp->next;
    }
+
+   return NULL;
 }
 
+/* get the info of a specific code line by it's line number, or NULL for error */
+cod * LineGetCodeInfo(int lineNum)	
+{
+   cod temp = _codhead;
+   while (temp!= NULL)
+   {
+	if(temp->lineNum == lineNum)
+		return temp;
+	else
+		temp = temp->next;
+   }
+
+   return -1;
+}
 /*------------------- Data Structure -------------------*/
 typedef enum{string,data}str_dat;
 typedef struct data
@@ -178,8 +188,8 @@ dat * createDat(int position, int value, char * name, str_data type)
 	newDat->position = position;
 	newDat->value = value;
 	newDat->name = name;
-	newSym->type = type;
-	newSym->next = NULL;
+	newDat->type = type;
+	newDat->next = NULL;
 
 	return newDat; 
 }
@@ -300,23 +310,22 @@ void freeSymbolList()
    }	
 }
 
-/* get the Label at the list symbol table */
-int getLabel(char* labelName)
+/* get the position in the linked list of a label  */
+sym getLabel(char* labelName)
 {
    int count = 0;
    sym temp = _symhead;
-   while(_symhead != NULL)
+   while(temp != NULL)
    {
 	if(strcmp(labelName, temp->name) == 0)
-	   return count;
+	   return temp;
 
 	else
 	{
-	   count++;
 	   temp = temp->next;
 	}
    }
-   return -1;
+   return NULL;	/* return NULL to signal "labelName" isn't in symbol list */
 }
 
 /* get the address of a specific symbol by it's position in the list */
@@ -347,40 +356,62 @@ void updateSymbolAdress(int IC)
 
 
 /*------------------- Machine Code Structure -------------------*/
-typedef struct machineCode
-{
+typedef struct machineCodeNode{
 	int address;
-	int[WORD_LENGTH] code_array;
-	mach * next;
-}mach;
+	mCU current;
+	mCN * next;
+}mCN;
 
-mach _machhead = NULL;
+typedef union {
+	typedef struct machineCode
+	{
+		unsigned int ERA 	: ERA_SIZE;
+		unsigned int destOp 	: OPERAND_SIZE;
+		unsigned int originOp 	: OPERAND_SIZE;
+		unsigned int opcode	: OPCODE_SIZE;
+		unsigned int group	: GROUP_SIZE;
+		unsigned int unused 	: UNUSED_SIZE;
+		unsigned int ZERO	: ZERO_SIZE;		
+	}mach;
+	short int code;
+}mCU;
+
+mCN _machhead = NULL;
 
 
 /* create new data link of symbol and return a pointer to it */
-mach * createMach(int address, )
+machineCodeUnion * createMach(int address, unsigned int group, unsigned int opcode, unsigned int originOp, unsigned int destOp, unsigned int ERA)
 {
 	int i;
-	mach * newMach = (mach *)malloc(sizeof(mach));
+	mCU * newMach = (mCU *)malloc(sizeof(mCU));
 	if(newMach = NULL)
 	{
 	   /* error: not enough memory */
 	   /* ADD ERROR HANDLING */
 	}
-
-	for(i=0;i<WORD_LENGTH;i++)	/* reset each initial code word to 0*/
+	mCN * newMCN = (mCN *)malloc(sizeof*mcN));
+	if(newMCN = NULL)
 	{
-	   newMach->code_array[i] = 0;	
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
 	}
+	newMach->mach->ZERO = 0;		/* this bit is always 0 and is used to make converting to 16 bit easier */
+	newMach->mach->unsued = 7;		/* these 3 bits are always 111 */
+	newMach->mach->group = group;
+	newMach->mach->opcode = opcode;
+	newMach->mach->originOp = originOp;
+	newMach->mach->destOp = destOp;
+	newMach->mach->ERA = ERA;
 
-	newMach->address = address;
-	newMach->next = NULL;
+	newMCN->address = address;
+	newMCN->current = newMach;
+	newMCN->next = NULL;
 
 	return newMach; 
 }
 
 /* add new symbol to the list */
-void addMachCode(mach newMach)
+void addMachCode(mCN newMach)
 {
    if(_machhead == NULL)
    {
@@ -390,8 +421,8 @@ void addMachCode(mach newMach)
 
    else
    {
-	mach temp = _machhead;
-	while(temp->next!=NULL)
+	mCN temp = _machhead;
+	while(temp->next != NULL)
 		temp = temp->next;
 	
 	temp->next = newMach;
@@ -399,11 +430,11 @@ void addMachCode(mach newMach)
    return;	
 }
 
-/* free memory allocation of symbols */
+/* free memory allocation of machine code linked list */
 void freeMachList()
 {
-   mach temp = _machhead;
-   while(_machhead != NULL)
+   mCN temp = _machhead;
+   while(temp != NULL)
    {
 	_machhead = _machhead->next;
 	free(temp);
@@ -411,13 +442,198 @@ void freeMachList()
    }	
 }
 
-/* get the address of a specific symbol by it's position in the list */
-char* getAddress(int position)	
-{
-   mach temp = _machhead;
-   int count = 0;
-   while(count < position)
-	temp = temp->next;
+/*------------------- Machine Word Structure -------------------*/
+typedef struct machineWordNode{
+	int address;
+	mWU current;
+	mWN * next;
+}mWN;
 
-   return temp->address;
+typedef union {
+	typedef struct machineWord
+	{
+		unsigned int ZERO	: ZERO_SIZE;
+		unsigned int WORD	: WORD_LENGTH;
+	}mword;
+	short int word;
+}mWU;
+
+
+mWN _mwordhead = NULL;
+
+
+/* create new data link of symbol and return a pointer to it */
+mWN * createMword(int address, unsigned int word)
+{
+	mWU * newmWU = (mWU *)malloc(sizeof(mWU));
+	if(newMU = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+	mWN * newMWN = (mWN *)malloc(sizeof(mWN));
+	if(newMword = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+	newmWU->mword->ZERO = 0;		/* this bit is always 0 and is used to make converting to 16 bit easier */
+	newmWU->mword->WORD = word;
+
+	newmWU->address = address;	
+	newMWN->next = NULL;
+
+	return newMword; 
+}
+
+/* add new symbol to the list */
+void addMword(mWN newMword)
+{
+   if(_mwordhead == NULL)
+   {
+	_mwordhead = newMword;
+	newMword->next = NULL;
+   }
+
+   else
+   {
+	mWN temp = _mwordhead;
+	while(temp->next!=NULL)
+		temp = temp->next;
+	
+	temp->next = newMword;
+   }
+   return;	
+}
+
+/* free memory allocation of Machine words */
+void freeMwordList()
+{
+   mWN temp = _mwordhead;
+   while(temp != NULL)
+   {
+	_mwordhead = _mwordhead->next;
+	free(temp);
+	temp=_mwordhead;
+   }	
+}
+
+/*------------------- External Structure -------------------*/
+typedef struct external
+{
+	char[MAX_LABEL_LENGTH] name;
+	int address;
+	ext * next;
+}ext;
+
+ext _exthead = NULL;
+
+
+/* create new external node and return a pointer to it */
+ext * createExt(char * name, int address)
+{
+	ext * newExt = (ext *)malloc(sizeof(ext));
+	if(newExt = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+
+	newExt->name = name;
+	newExt->address = address;
+	newExt->next = NULL;
+
+	return newExt; 
+}
+
+/* add new data line to the list */
+void addExt(ext newExt)
+{
+   if(_exthead == NULL)
+   {
+	_dexthead = newExt;
+	newExt->next = NULL;
+   }
+
+   else
+   {
+	ext temp = _exthead;
+	while(temp->next != NULL)
+		temp = temp->next;
+	
+	temp->next = newExt;
+   }
+   return;	
+}
+
+/* free memory allocation of data list */
+void freeExtList()
+{
+   ext temp = _exthead;
+   while(temp != NULL)
+   {
+	_exthead = _exthead->next;
+	free(temp);
+	temp = _exthead;
+   }	
+}
+
+/*------------------- Entry Structure -------------------*/
+typedef struct entry
+{
+	char[MAX_LABEL_LENGTH] name;
+	int address;
+	ext * next;
+}ent;
+
+ent _enthead = NULL;
+
+
+/* create new external node and return a pointer to it */
+ent * createEnt(char * name, int address)
+{
+	ent * newEnt = (ent *)malloc(sizeof(ent));
+	if(newEnt = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+
+	newEnt->name = name;
+	newEnt->address = address;
+	newEnt->next = NULL;
+
+	return newEnt; 
+}
+
+/* add new data line to the list */
+void addEnt(ent newEnt)
+{
+   if(_exthead == NULL)
+   {
+	_dexthead = newExt;
+	newExt->next = NULL;
+   }
+
+   else
+   {
+	ent temp = _enthead;
+	while(temp->next != NULL)
+		temp = temp->next;
+	
+	temp->next = newEnt;
+   }
+   return;	
+}
+
+/* free memory allocation of data list */
+void freeEntList()
+{
+   ent temp = _enthead;
+   while(temp != NULL)
+   {
+	_enthead = _enthead->nent;
+	free(temp);
+	temp = _enthead;
+   }	
 }
