@@ -133,7 +133,7 @@ startLoop(char * fileName)
 		   strncpy(tempBuf,buf+j,check-1);			/* copy the label name to tempbuf, without spaces and ":" */
 		   strcpy(tempBuf2,buf+check+j);			/* copy the rest of buf to tempBuf2 */
 		   newSym = createSym(tempBuf, DC, false, instruction);	/* create a symbol with the label name */
-		   if(getLabel(tempBuf) == -1)				/* check that a label with the same name doesn't exist already */
+		   if(getLabel(tempBuf) == NULL)			/* check that a label with the same name doesn't exist already */
 		   {
 		   	addSymbol(newSym);				/* add the new external symbol to the symbol list */
 		   }
@@ -163,8 +163,16 @@ startLoop(char * fileName)
 				if(label_flag)				/* create a data node to hold first number, with the label if it exists */
 				{	
 					newDat = createDat(DC, tempNum, label , data);
-					addData(newDat);	
-					DC++;
+					if(getLabel(label) == NULL)				/* check that a label with the same name doesn't exist already */ 
+					{
+						addData(newDat);	
+						DC++;
+					}
+					else
+					{
+						/* error: label name already exists */
+						/* ADD ERROR HANDLING */
+					}
 				}
 				else
 				{
@@ -198,7 +206,7 @@ startLoop(char * fileName)
 				}
 				else
 				{
-					/* error: no number after las comma */
+					/* error: no number after last comma */
 					/* ADD ERROR HANDLING */
 				}
 				
@@ -245,9 +253,18 @@ startLoop(char * fileName)
 				if(label_flag)
 				{	
 					newDat = createDat(DC, tempbuf[1+i], label, string) 	/* create a data node to hold next letter, with the label if it exists */
-					addData(newDat);
-					DC++;
-					i++;
+					if(getLabel(label) == NULL)				/* check that a label with the same name doesn't exist already */ 
+					{
+						addData(newDat);
+						DC++;
+						i++;
+					}
+					else
+					{
+						/* error: label name already exists */
+						/* ADD ERROR HANDLING */
+					}
+
 				}
 				while(tempbuf[1+i] != STR_FLAG)
 				{
@@ -292,7 +309,7 @@ startLoop(char * fileName)
 			/* ADD ERROR HANDLING */
 		   }
 		   newSym = createSym(tempBuf2, 0, true, instruction);	/* create a symbol with the external symbol name */
-		   if(getLabel(tempBuf2) == -1)				/* check that a label with the same name doesn't exist already */
+		   if(getLabel(tempBuf2) == NULL)			/* check that a label with the same name doesn't exist already */
 		   {
 		   	addSymbol(newSym);				/* add the new external symbol to the symbol list */
 		   }
@@ -362,12 +379,12 @@ startLoop(char * fileName)
 				L = 3;
 			}
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10));
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   if(getLabel(label) == -1)
+			   if(getLabel(label) == NULL)
 			   {
 				addSymbol(newSym);				/* add the new symbol to the symbol list */
 			   }
@@ -403,12 +420,12 @@ startLoop(char * fileName)
 				L = 3;
 			}
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10));
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   if(getLabel(label) == -1)
+			   if(getLabel(label) == NULL)
 			   {
 				addSymbol(newSym);				/* add the new symbol to the symbol list */
 			   }
@@ -448,12 +465,12 @@ startLoop(char * fileName)
 				L = 3;
 			}
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10));
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   if(getLabel(label) == -1)
+			   if(getLabel(label) == NULL)
 			   {
 				addSymbol(newSym);				/* add the new symbol to the symbol list */
 			   }
@@ -494,12 +511,12 @@ startLoop(char * fileName)
 				L = 3;
 			}
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10));
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   if(getLabel(label) == -1)
+			   if(getLabel(label) == NULL)
 			   {
 				addSymbol(newSym);				/* add the new symbol to the symbol list */
 			   }
@@ -533,12 +550,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'not' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
 			 	   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -573,12 +590,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'clr' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
 			  	   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -618,12 +635,12 @@ startLoop(char * fileName)
 
 			L = 3; /* 'lea' command can't use 2 registers, so it always requires 3 word lines */
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10));
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
 			   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-			   if(getLabel(label) == -1)
+			   if(getLabel(label) == NULL)
 			   {
 				addSymbol(newSym);				/* add the new symbol to the symbol list */
 			   }
@@ -657,12 +674,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'inc' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
 			 	   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -697,12 +714,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'dec' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -738,12 +755,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'jmp' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -778,12 +795,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'bne' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -818,12 +835,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'red' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -853,12 +870,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'prn' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -894,12 +911,12 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'jsr' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -915,12 +932,12 @@ startLoop(char * fileName)
 		case 14: /* rts */
 
 				L = 1; /* 'rts' command always requires 1 word */
-				newCod = createCod(IC, cmdNUM, "", "", 0, 0);
+				newCod = createCod(IC, cmdNUM, "", "", 0, 0, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
@@ -935,12 +952,12 @@ startLoop(char * fileName)
 	   	case 15: /* stop */
 			
 				L = 1; /* 'stop' command always requires 1 word */
-				newCod = createCod(IC, cmdNUM, "", "", 0, 0);
+				newCod = createCod(IC, cmdNUM, "", "", 0, 0, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
 				   newSym = createSym(label, IC, false, action);	/* create a symbol with the label name */
-				   if(getLabel(label) == -1)
+				   if(getLabel(label) == NULL)
 				   {
 				   	addSymbol(newSym);				/* add the new symbol to the symbol list */
 				   }
