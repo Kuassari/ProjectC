@@ -59,8 +59,8 @@ char ** commands = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp",
 /*----------------- Functions Declaration -----------------*/
 
 int checkCMD(char *)
-
-
+startLoop(char *)
+endLoop(char *)
 
 
 /*------------------- Code Structure -------------------*/
@@ -166,7 +166,7 @@ cod * LineGetCodeInfo(int lineNum)
 typedef enum{string,data}str_dat;
 typedef struct data
 {
-	int position;
+	int address;
 	int value;
 	char * name;
 	str_data type;
@@ -177,7 +177,7 @@ dat _dathead = NULL;
 
 
 /* create new data link of data and return a pointer to it */
-dat * createDat(int position, int value, char * name, str_data type)
+dat * createDat(int address, int value, char * name, str_data type)
 {
 	dat * newDat = (dat *)malloc(sizeof(dat));
 	if(newDat = NULL)
@@ -185,7 +185,7 @@ dat * createDat(int position, int value, char * name, str_data type)
 	   /* error: not enough memory */
 	   /* ADD ERROR HANDLING */
 	}
-	newDat->position = position;
+	newDat->address = address;
 	newDat->value = value;
 	newDat->name = name;
 	newDat->type = type;
@@ -218,7 +218,7 @@ void addData(dat newDat)
 void freeDataList()
 {
    dat temp = _dathead;
-   while(_dathead != NULL)
+   while(temp != NULL)
    {
 	_dathead = _dathead->next;
 	free(temp);
@@ -226,23 +226,21 @@ void freeDataList()
    }	
 }
 
-/* get the position of the data in the data list */
-int getData(char* dataName)
+/* get the info of the data in the data list */
+dat getDataInfo(int address)
 {
-   int count = 0;
    dat temp = _dathead;
-   while(_dathead != NULL)
+   while(temp != NULL)
    {
-	if(strcmp(dataName, temp->name) == 0)
-	   return count;
+	if(temp->address == address)
+	   return temp;
 
 	else
 	{
-	   count++;
 	   temp = temp->next;
 	}
    }
-   return -1;
+   return NULL;
 }
 
 
@@ -466,7 +464,7 @@ mWN _mwordhead = NULL;
 mWN * createMword(int address, unsigned int word)
 {
 	mWU * newmWU = (mWU *)malloc(sizeof(mWU));
-	if(newMU = NULL)
+	if(newmWU = NULL)
 	{
 	   /* error: not enough memory */
 	   /* ADD ERROR HANDLING */
@@ -480,10 +478,88 @@ mWN * createMword(int address, unsigned int word)
 	newmWU->mword->ZERO = 0;		/* this bit is always 0 and is used to make converting to 16 bit easier */
 	newmWU->mword->WORD = word;
 
-	newmWU->address = address;	
+	newmWN->address = address;
+	newMWN->current = newmWU;	
 	newMWN->next = NULL;
 
-	return newMword; 
+	return newMWN: 
+}
+
+/* add new symbol to the list */
+void addMword(mWN newMword)
+{
+   if(_mwordhead == NULL)
+   {
+	_mwordhead = newMword;
+	newMword->next = NULL;
+   }
+
+   else
+   {
+	mWN temp = _mwordhead;
+	while(temp->next!=NULL)
+		temp = temp->next;
+	
+	temp->next = newMword;
+   }
+   return;	
+}
+
+/* free memory allocation of Machine words */
+void freeMwordList()
+{
+   mWN temp = _mwordhead;
+   while(temp != NULL)
+   {
+	_mwordhead = _mwordhead->next;
+	free(temp);
+	temp=_mwordhead;
+   }	
+}
+
+/*------------------- Machine Data Structure -------------------*/
+typedef struct machineDataNode{
+	int address;
+	mDU current;
+	mDN * next;
+}mDN;
+
+typedef union {
+	typedef struct machineData
+	{
+		unsigned int ZERO	: ZERO_SIZE;
+		unsigned int DATA	: WORD_LENGTH;
+	}mdata;
+	short int data;
+}mDU;
+
+
+mWN _mwordhead = NULL;
+
+
+/* create new data link of symbol and return a pointer to it */
+mDN * createMdata(int address, unsigned int data)
+{
+	mDN * newmDN = (mDN *)malloc(sizeof(mDN));
+	if(nemDN = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+	mDU * newmDU = (mDU *)malloc(sizeof(mDU));
+	if(newmDU = NULL)
+	{
+	   /* error: not enough memory */
+	   /* ADD ERROR HANDLING */
+	}
+	newmDU->mdata->ZERO = 0;		/* this bit is always 0 and is used to make converting to 16 bit easier */
+	newmDU->mdata->DATA = data;
+
+	newmDN->address = address;
+	newmDN->current = newmDU;	
+	newmDN->next = NULL;
+
+	return newMDN; 
 }
 
 /* add new symbol to the list */
