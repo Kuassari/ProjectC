@@ -1,9 +1,6 @@
+#include "common.h"
 
-int checkOneOperand(char *, char *) 
-int checkTwoOperands(char *, char *, char *)
 int skipSpaces(char *, char *)
-int frstOpChk(char *)
-
 
 /* the second loop that: opens the given filename to read and 3 other output files to write to, translates the relevant code from the given file in assembly to machine code in the output files */
 endLoop(char * fileName)
@@ -427,7 +424,12 @@ endLoop(char * fileName)
 	
 	 
 	}
-	
+	temp mCN = _machhead;
+	while(temp != NULL)
+	{
+	    fprintf(fobs,"%s /n",temp->current->code);
+	    temp = temp->next;
+	}
 	/* merge code table with data table */
 }
 
