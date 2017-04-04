@@ -1,3 +1,4 @@
+#include "common.h"
 
 int checkOneOperand(char *, char *) 
 int checkTwoOperands(char *, char *, char *)
@@ -985,7 +986,15 @@ startLoop(char * fileName)
 	data_length = DC;
 
 	updateSymbolAdress(IC);
-	
+
+	i = 0;
+	dat temp;
+	while(i<=DC)		/* translate data list to machine data list */
+	{
+		temp = getDataInfo(i);
+		addMword(createMdata(i, (temp->value)));
+		i++;
+	}
 }
 
 int skipSpaces(char * str, char * toWord)	/* a function for "skipping" spaces in a given string */
