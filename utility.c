@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "sys/types.h"
+#include "common.h"
 
 /*-------------------From Base 10 to Base 16-------------------*/
 
@@ -233,22 +230,20 @@ int checkCMD(char * toCheck)
 }
 
 /* Convert a decimal number to a binary number (in array) */
-void cnvrtToBIN(int decimal, int binary[], int WORD_LENGTH){
+void cnvrtToBIN(int decimal, int binary, int WORD_LENGTH){
 
-   long int quotient;
+   int quotient;
+   unsigned int mask;
    int i=0;
    quotient = decimal;
 
-   while (i < WORD_LENGTH)
-   {
-	binary[i++]= 0;			/* reset binary number to 0 */
-   }
-   i=0;
-
    while(quotient != 0)			
    {
-	binary[i]= quotient % 2;	/* set digit i to 0 or 1 */
+	mask = quotient % 2;		/* check if 0 or 1 is needed */
+	mask *= pow(10,i);		/* set the current digit according to i */
+	binary += mask;			/* update the binary number */
 	quotient = quotient / 2;	/* divide quotient by 2 to get next digit */
+	mask = 0;			/* reset mask to 0 before next check */
 	i++;
    }
 
@@ -256,8 +251,8 @@ void cnvrtToBIN(int decimal, int binary[], int WORD_LENGTH){
    {
 	while(i<WORD_LENGTH)		/* fill remaining digits with 0's */
 	{
-	    binary[i]= 0;
-	    i++;
+	   mask *= pow(10,i);		/* set the current digit according to i */
+	   i++;
 	}
    }
 }
