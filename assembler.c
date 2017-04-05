@@ -1,7 +1,5 @@
 #include "common.h"
 
-void startLoop(FILE *, char *) 
-
 int main(int argc, char *argv[]) 
 {
 	int i;
@@ -32,5 +30,7 @@ int main(int argc, char *argv[])
 		startLoop(nameList[i]);
 		endLoop(nameList[i]);
 	}
+
+	return 0;
 }
 
