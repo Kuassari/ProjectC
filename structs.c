@@ -197,6 +197,7 @@ symp createSym(char name[MAX_LABEL_LENGTH], int add, bool isExt, act_inst type)
 	   /* ADD ERROR HANDLING */
 	}
 	strcpy(newSym->name,name);
+	strcat(newSym->name,STRING_END);
 	newSym->address = add;
 	newSym->isExtern = isExt;
 	newSym->type = type;
@@ -492,7 +493,8 @@ extp createExt(char name[MAX_LABEL_LENGTH], int address)
 	   /* ADD ERROR HANDLING */
 	}
 
-	strcpy(newExt->name,name);
+	strcpy(newExt->name, name);
+	strcat(newExt->name, STRING_END);
 	newExt->address = address;
 	newExt->next = NULL;
 
@@ -549,6 +551,7 @@ entp createEnt(char * name, int address)
 	}
 
 	strcpy(newEnt->name,name);
+	strcat(newEnt->name,STRING_END);
 	newEnt->address = address;
 	newEnt->next = NULL;
 
