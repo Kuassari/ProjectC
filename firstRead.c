@@ -1,5 +1,4 @@
 #include "structs.h"
-#include "common.h"
 
 int checkOneOperand(char *, char *);
 int checkTwoOperands(char *, char *, char *);
@@ -67,8 +66,8 @@ void startLoop(char * fileName)
 	   /*--- MAKE SURE TO CHECK IF J IS NEEDED IN NEXT LINE ---*/ 
 	   /*--- MAKE SURE TO CHECK IF J IS NEEDED IN NEXT LINE ---*/
 
-	   /*strncpy((char)letter,buf+j,1); 		/* check first non-space letter of the line to see if it's a comment line */
-	   letter = buf[j];
+	   
+	   letter = buf[j];		/* check first non-space letter of the line to see if it's a comment line */
 	   if(letter == COMMENT_SIGN)
 	   {
 		break;
@@ -77,7 +76,7 @@ void startLoop(char * fileName)
 	   
 	   if((labelpos = strcspn(buf,(char *)LABEL_SIGN)) != (strlen(buf))) 		/* checks if the line contains a label */
 	   {
-		sscanf(buf, " %s", &tempLabel);
+		strncpy(tempLabel,buf,labelpos);
 		
 		/* checks for valid label */
 		if(strchr(tempLabel,(char)STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
