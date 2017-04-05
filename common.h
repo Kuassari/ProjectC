@@ -1,3 +1,6 @@
+#ifndef COMMON_H
+#define COMMON_H
+
 /*------------------- Libraries-------------------*/
 
 #include <stdio.h>
@@ -59,7 +62,7 @@ static int IC = IC_FIRST_ADDRESS;
 static int DC = DC_FIRST_ADDRESS;
 typedef enum {false, true} bool;
 
-char commands[16][4] = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"};
+extern const char commands[16][4];
 
 /*----------------- Functions Declaration -----------------*/
 
@@ -67,3 +70,4 @@ int checkCMD(char *);
 void startLoop(char *);
 void endLoop(char *);
 
+#endif
