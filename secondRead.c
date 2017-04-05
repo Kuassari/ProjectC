@@ -46,16 +46,20 @@ void endLoop(char * fileName)
 	int address;				/* hold address of current symbol\entry\extern word */
 
 	strcpy(sourceFile, fileName);	
-	strcpy(objFile, fileName);	
-	strcpy(entFile, fileName);	
-	strcpy(extFile, fileName);	
-
-
+	strcpy(objFile, fileName);
+	strcpy(entFile, fileName);
+	strcpy(extFile, fileName);
+	
 	strcat(sourceFile, SOURCE_FILE);	/* add ".as" to the end of the filename, to address to the proper file */
 	strcat(objFile, OBJ_FILE);		/* add ".ob" to the end of the filename, to address to the proper file */
 	strcat(entFile, ENT_FILE);		/* add ".ent" to the end of the filename, to address to the proper file */
 	strcat(extFile, EXT_FILE);		/* add ".ext" to the end of the filename, to address to the proper file */
 	
+	strcat(sourceFile,STRING_END);
+	strcat(objFile,STRING_END);
+	strcat(entFile,STRING_END);
+	strcat(extFile,STRING_END);
+
 	fp = fopen(sourceFile, "r");
 	fob = fopen(objFile, "a");
 	fent = fopen(entFile, "a");
@@ -98,12 +102,14 @@ void endLoop(char * fileName)
 		}
 
 		strncpy(tempLabel,buf,labelpos);
-		
+		strcat(tempLabel,STRING_END);
+
 		/* checks for valid label */
 		if(strchr(tempLabel, STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
 		{
 		   check = strcspn(tempLabel, (char *)LABEL_SIGN);			/* find the location of ':' */
 		   strncpy(tempWord, tempLabel, check);					/* copy the part of the word before ':' into tempWord, to check */
+		   strcat(tempWord,STRING_END);
 		   if(strchr(tempWord, STRING_SIGN) == strrchr(tempWord, STRING_SIGN))	/* check that only one '"' exists before ':' */
 		   {
 			if(strchr(tempLabel+check, LABEL_SIGN) != NULL)
@@ -127,7 +133,7 @@ void endLoop(char * fileName)
 		
 		label_flag = true;
 		strncpy(label,tempLabel,(strlen(tempLabel)-1));		/* copy label name to label string, without the ":" at the end */
-
+		strcat(label,STRING_END);
 	   }
 
 	   else
@@ -143,7 +149,7 @@ void endLoop(char * fileName)
 	   if(strstr(buf,ENTRY_WORD) != NULL || strstr(buf,EXTERN_WORD) != NULL)
 	   {
 		strcpy(tempBuf,strchr(buf,SPACE));			/* find the end of instruction name */
-		/* step 9+10 in algorithm */
+	  	strcat(tempBuf,STRING_END);
 		if(strstr(buf,EXTERN_WORD) != NULL)		/* if it's external instruction */
 		{
 		   j = skipSpaces(tempBuf,tempBuf);		/* check that line isn't empty after ".extern" */
@@ -154,6 +160,7 @@ void endLoop(char * fileName)
 		   }	
 		   check = strcspn(tempBuf,(char *)SPACE);		/* find the end of external symbol name */
 		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempbuf2, without spaces and ":" */			
+		   strcat(tempBuf2,STRING_END);
 		   j = skipSpaces(tempBuf,tempWord);
 		   if(j != -1)
 		   {
@@ -184,6 +191,7 @@ void endLoop(char * fileName)
 		   }	
 		   check = strcspn(tempBuf,(char *)SPACE);		/* find the end of entry symbol name */
 		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempbuf2, without spaces and ":" */			
+		   strcat(tempBuf2,STRING_END);
 		   j = skipSpaces(tempBuf,tempWord);
 		   if(j != -1)
 		   {
@@ -356,7 +364,7 @@ void endLoop(char * fileName)
 				}
 		   } /* end of second operand switch check */
 		   addMachCode(createMach(tempCod->address, groupCode, opCode, op1, op2, 0));	/* add the command line to the machine code list */
-		   addMword(createMword((tempCod->address)+1, op1result+op1ARE));		/* add the first operand information to the machine word list */
+		   addMword(createMword((tempCod->address)+1, op1result+op1ARE));		/* add the first operand information to the machine word list (should be both operands if both are registers) */
 		   if((op1 != 3) || op2 != 3)	/* if one of the operands isn't a register */
 		   {
 			addMword(createMword((tempCod->address)+2, op2result+op1ARE));		/* add the second operand information to the machine word list */
