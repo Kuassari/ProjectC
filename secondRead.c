@@ -1,7 +1,7 @@
 #include "structs.h"
-#include "common.h"
 
 int skipSpaces(char *, char *);
+
 
 /* the second loop that: opens the given filename to read and 3 other output files to write to, translates the relevant code from the given file in assembly to machine code in the output files */
 void endLoop(char * fileName)
@@ -25,6 +25,7 @@ void endLoop(char * fileName)
 	char entFile[MAX_LABEL_LENGTH];
 	char extFile[MAX_LABEL_LENGTH];
 
+	mCNp _machhead = NULL;
 	codp tempCod;				/* holds info on current line of code that we collected on first loop */
 	symp tempSym;				/* holds info on a temporary symbol */
 	mCNp temp;
@@ -36,16 +37,12 @@ void endLoop(char * fileName)
 	int op1ARE;
 	int code_length;		
 
-	int tempNum;				/* a temp int to hold numbers */
 	char letter;			
 	int labelpos;				/* label position in line */ 
 	int cmdNUM;				/* command type */
 	int op1result;
-	char * op1name;
 	int op2result;
-	char * op2name;
-	int check;
-	int L; 					/* the number of words required by the line */
+	int check;				/* the number of words required by the line */
 	int address;				/* hold address of current symbol\entry\extern word */
 
 	strcpy(sourceFile, fileName);	
@@ -169,7 +166,7 @@ void endLoop(char * fileName)
 
 			/* convert address to hexadecimal */
 
-			fprintf(&fext, "%d \t %s", address, tempBuf2);	/* write the label name and its address (in hexa) to external labels file */
+			fprintf(fext, "%d \t %s", address, tempBuf2);	/* write the label name and its address (in hexa) to external labels file */
 		   }
 		   else
 		   {
@@ -199,7 +196,7 @@ void endLoop(char * fileName)
 
 			/* convert address to hexadecimal */
 
-			fprintf(&fent, "%d \t %s", address, tempBuf2);	/* write the label name and its address (in hexa) to entry labels file */
+			fprintf(fent, "%d \t %s", address, tempBuf2);	/* write the label name and its address (in hexa) to entry labels file */
 		   }
 		   else
 		   {
@@ -437,22 +434,8 @@ void endLoop(char * fileName)
 
 	while(temp != NULL)
 	{
-	    fprintf(&fob,"%d /n",temp->current.code);
+	    fprintf(fob,"%d /n",temp->current.code);
 	    temp = temp->next;
 	}
 	/* merge code table with data table */
-}
-
-int skipSpaces(char * str, char * toWord)	/* a function for "skipping" spaces in a given string */
-{
-	int i = 0;
-	while(isspace(str+i)) 	 		/* as long as current letter pointed to in the string is space */
-	{
-	   i++;			 		/* skip a letter */
-	   if((str+i) == (char *)NEWLINE) 	 	/* check for making sure we didn't reach end of string */
-		return -1;			/* if we did, return -1 to signal */
-	}
-	toWord = strcpy(toWord,str+i);  	/* copy the next "word" to the desired string */
-	
-	return i;				/* return the index for the next non-space character in str */
 }
