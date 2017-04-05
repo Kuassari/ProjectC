@@ -1,5 +1,6 @@
 #include "common.h"
 
+const char commands[16][4] = {"mov","cmp","add","sub","not","clr","lea","inc","dec","jmp","bne","red","prn","jsr","rts","stop"};
 
 /*-------------------From Base 10 to Base 16-------------------*/
 
@@ -228,32 +229,4 @@ int checkCMD(char * toCheck)
    }
 
    return -1;
-}
-
-/* Convert a decimal number to a binary number */
-void cnvrtToBIN(int decimal, int binary)
-{
-   int quotient;
-   unsigned int mask;
-   int i=0;
-   quotient = decimal;
-
-   while(quotient != 0)			
-   {
-	mask = quotient % 2;		/* check if 0 or 1 is needed */
-	mask *= pow(10,i);		/* set the current digit according to i */
-	binary += mask;			/* update the binary number */
-	quotient = quotient / 2;	/* divide quotient by 2 to get next digit */
-	mask = 0;			/* reset mask to 0 before next check */
-	i++;
-   }
-
-   if(quotient == 0)
-   {
-	while(i<WORD_LENGTH)		/* fill remaining digits with 0's */
-	{
-	   mask *= pow(10,i);		/* set the current digit according to i */
-	   i++;
-	}
-   }
 }
