@@ -22,11 +22,12 @@ void startLoop(char * fileName)
 	char label[MAX_LABEL_LENGTH];   	/* holds current label if it exists */
 	char tempWord[MAX_LABEL_LENGTH];	/* a temp buffer to hold a temporary word from buf */
 	int tempNum;				/* a temp int to hold numbers */
-	char sourceFile[MAX_LABEL_LENGTH];
+	char sourceFile[MAX_BUF];
 	int code_length;
 	int data_length;
 
-	char letter;			
+	char letter;
+	char * buf2;		
 	int labelpos;			/* label position in line */ 
 	int cmdNUM;			/* command type */
 	int op1result;
@@ -40,9 +41,10 @@ void startLoop(char * fileName)
 	codp newCod;
 	datp tempDat;
 
-	strcpy(sourceFile,fileName);	
+	strcpy(sourceFile,fileName);
 	strcat(sourceFile,SOURCE_FILE);	/* add ".as" to the end of the filename, to address to the proper file */
-	
+	strcat(sourceFile,STRING_END);
+
 	fp = fopen(sourceFile, "r");
 
 	if(!fp)
@@ -53,6 +55,7 @@ void startLoop(char * fileName)
 
 	while(fgets(buf,MAX_BUF,fp) != NULL) 	/* reads a line from the text file */
 	{
+	   strcat(buf,STRING_END);
 	   lineNum++;
 	   /* check for empty or comment line */
 	   j = 0; /* reset index j before check */
@@ -77,12 +80,13 @@ void startLoop(char * fileName)
 	   if((labelpos = strcspn(buf,(char *)LABEL_SIGN)) != (strlen(buf))) 		/* checks if the line contains a label */
 	   {
 		strncpy(tempLabel,buf,labelpos);
-		
+		strcat(tempLabel,STRING_END);
 		/* checks for valid label */
 		if(strchr(tempLabel,(char)STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
 		{
 		   check = strcspn(tempLabel,(char *)LABEL_SIGN);			/* find the location of ':' */
 		   strncpy(tempWord,tempLabel,length);					/* copy the part of the word before ':' into tempWord, to check */
+		   strcat(tempWord,STRING_END);
 		   if(strchr(tempWord,STRING_SIGN) == strrchr(tempWord,STRING_SIGN))	/* check that only one '"' exists before ':' */
 		   {
 			if(strchr(tempLabel+check,(char)LABEL_SIGN) != NULL)
@@ -112,6 +116,7 @@ void startLoop(char * fileName)
 		
 		label_flag = true;
 		strncpy(label,tempLabel,(strlen(tempLabel)-1));			/* copy label name to label string, without the ":" at the end */
+		strcat(label,STRING_END);
 
 	   }
 
@@ -130,13 +135,16 @@ void startLoop(char * fileName)
 			/* error: no more letters in line */
 			/* ADD ERROR HANDLING */
 		}
-		strcpy(tempBuf2,buf+j);				/* copy buf (without first spaces) to tempBuf2 (will be recopied if buf has a label) */	
+		strcpy(tempBuf2,buf+j);				/* copy buf (without first spaces) to tempBuf2 (will be recopied if buf has a label) */
+		strcat(tempBuf2,STRING_END);
 	
 		if(label_flag)					/* if label exists */
 		{	
 		   check = strcspn(buf+j,(char *)SPACE);		/* find the end of label name */
 		   strncpy(tempBuf,buf+j,check-1);			/* copy the label name to tempbuf, without spaces and ":" */
+		   strcat(tempBuf,STRING_END);
 		   strcpy(tempBuf2,buf+check+j);			/* copy the rest of buf to tempBuf2 */
+		   strcat(tempBuf2,STRING_END);
 		   newSym = createSym(tempBuf, DC, false, instruction);	/* create a symbol with the label name */
 		   if(getLabel(tempBuf) == NULL)			/* check that a label with the same name doesn't exist already */
 		   {
@@ -239,7 +247,10 @@ void startLoop(char * fileName)
 			}
 			else
 			{
-				if((strcpy(tempBuf,strchr(tempBuf2+1,(char)STR_FLAG))) != NULL) 	/* find end of string word, copy it to tempbuf */
+				buf2 = strchr(tempBuf2+1,(char)STR_FLAG);
+				strcpy(tempBuf2,buf2);
+				strcat(tempBuf2,STRING_END);
+				if(tempBuf2 != NULL) 	/* find end of string word, copy it to tempbuf */
 				{
 					j = skipSpaces(tempBuf,tempWord);		/* find the next word in buf (skipping previous spaces and ".string") */
 					if(j != -1)
@@ -296,6 +307,7 @@ void startLoop(char * fileName)
 	   if(strstr(buf,ENTRY_WORD) != NULL || strstr(buf,EXTERN_WORD) != NULL)
 	   {
 		strcpy(tempBuf,strchr(buf,(char)SPACE));	/* find the end of instruction name */
+		strcat(tempBuf,STRING_END);
 		/* step 9+10 in algorithm */
 		if(strstr(buf,EXTERN_WORD) != NULL)		/* if it's external instruction */
 		{
@@ -306,7 +318,8 @@ void startLoop(char * fileName)
 			/* ADD ERROR HANDLING */
 		   }	
 		   check = strcspn(tempBuf,(char *)SPACE);		/* find the end of external symbol name */
-		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempBuf2, without spaces and ":" */			
+		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempBuf2, without spaces and ":" */
+		   strcat(tempBuf2,STRING_END);
 		   j = skipSpaces(tempBuf,tempWord);
 		   if(j != -1)
 		   {
@@ -1012,6 +1025,7 @@ int skipSpaces(char * str, char * toWord)		/* a function for "skipping" spaces i
 		return -1;				/* if we did, return -1 to signal */
 	}
 	toWord = strcpy(toWord,str+i);  		/* copy the next "word" to the desired string */
+	strcat(toWord,STRING_END);
 	
 	return i;					/* return the index for the next non-space character in str */
 }
@@ -1050,7 +1064,9 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	   }
 	   length = strcspn(str,(char *)COMMA); 	/* check for the end of first operand by finding comma */
 	   strncpy(op1,str,length);			/* copy where first operand should be to op1 (with the comma, for the check) */
+	   strcat(op1,STRING_END);
 	   strcpy(op2,str+length); 			/* copy where next operand should be to op2 (without the comma) */
+	   strcat(op2,STRING_END);
 	   
 
 	   i = 0;
@@ -1081,6 +1097,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 		/* ADD ERROR HANDLING */
 	   }
 	   strncpy(op1name,op1+1,i-1);		/* copy the first operand to op1name without any spaces (but with sign) */
+	   strcat(op1name,STRING_END);
 	   op1type = 1;				/* signal that first operand is an immediate number */
 	}
 
@@ -1112,7 +1129,9 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 
 			   	length = strcspn(str,(char *)COMMA);	/* find the beginning of the next operand info */
 			   	strcpy(op2,str+length+1); 		/* copy it to op2, skipping the comma */
+				strcat(op2,STRING_END);
 			   	strncpy(op1,str,length);		/* copy the first part to op1 (with the comma, for the check) */	
+				strcat(op1,STRING_END);
 	 
 			   }
 			   else
@@ -1153,7 +1172,9 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 
 		length = strcspn(str,(char *)COMMA);		/* find the beginning of the next operand info */
 		strcpy(op2,str+length+1); 		/* copy it to op2, skipping the comma */
+		strcat(op2,STRING_END);
 		strncpy(op1,str,length);		/* copy the first part to op1 (with the comma, for the check) */
+		strcat(op1,STRING_END);
 		
 	   }
 
@@ -1168,7 +1189,8 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	   {
 		i++;
 	   }
-	   strncpy(op1name,op1,i);		/* copy the first operand to op1name without any spaces */	   
+	   strncpy(op1name,op1,i);		/* copy the first operand to op1name without any spaces */
+	   strcat(op1name,STRING_END);   
 	}
 	
 	if(op1type == 0)	/* check that we didn't find first operand type yet, so should be a variable */ 
@@ -1181,7 +1203,9 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	   }
 	   length = strcspn(str,(char *)COMMA);	/* find the beginning of the next operand info */
 	   strcpy(op2,str+length+1); 		/* copy it to op2, skipping the comma */
+	   strcat(op2,STRING_END);
 	   strncpy(op1,str,length);		/* copy the first part to op1 (with the comma, for the check) */
+	   strcat(op1,STRING_END);
 	   
 	   
 
@@ -1201,7 +1225,8 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	   {
 		i++;
 	   }
-	   strncpy(op1name,op1,i);		/* copy the first operand to op1name without any spaces */	   
+	   strncpy(op1name,op1,i);		/* copy the first operand to op1name without any spaces */
+	   strcat(op1name,STRING_END);	   
 	}
 
 
@@ -1241,7 +1266,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 
 }
 
-int frstOpChk(char * op1) /* a function that recieves the first operand of a two-operand command, and checks that there are no values between it and the comma separating it from the second operand (should be the last letter of op1 */
+int frstOpChk(char * op1) /* a function that recieves the first operand of a two-operand command, and checks that there are no values between it and the comma separating it from the second operand (should be the last letter of op1) */
 {
 
 	int j = 0;
@@ -1273,7 +1298,7 @@ int frstOpChk(char * op1) /* a function that recieves the first operand of a two
 }
 
 
-int checkOneOperand(char * str, char * opName) /* a function to check the validity and type of a single operand, which can be a second operand of a two-operand command, or the single operand if a one-operand command. assumes the string given starts with the first letter of the operand. return 1 for immediate number, 2 for register, 3 for register-index, and 4 for variable. 0 is given if no type is detected */
+int checkOneOperand(char * str, char * opName) /* a function to check the validity and type of a single operand, which can be a second operand of a two-operand command, or the single operand of a one-operand command. assumes the string given starts with the first letter of the operand. return 1 for immediate number, 2 for register, 3 for register-index, and 4 for variable. 0 is given if no type is detected */
 {
 
 	int i = 0;
@@ -1319,6 +1344,7 @@ int checkOneOperand(char * str, char * opName) /* a function to check the validi
 	   }
 	   
 	   strncpy(opName,str+1,i-1);		/* copy the first operand to op1name without any spaces (but with sign) */
+	   strcat(opName,STRING_END);
 	   opType = 1;				/* immediate number found with no errors */
 	}
 
@@ -1393,6 +1419,7 @@ int checkOneOperand(char * str, char * opName) /* a function to check the validi
 	   i++;
 	}
 	strncpy(opName,str,i);		/* copy the first operand to opName without any spaces */
+	strcat(opName,STRING_END);
 	
 	}
 
@@ -1422,7 +1449,8 @@ int checkOneOperand(char * str, char * opName) /* a function to check the validi
 	   {
 	       i++;
 	   }
-	   strncpy(opName,str,i);	/* copy the first operand to opName without any spaces */
+	   strncpy(opName, str, i);	/* copy the first operand to opName without any spaces */
+	   strcat(opName, STRING_END);
 	   opType = 4; 			/* variable found with no errors */
 	}
 
