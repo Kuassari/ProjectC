@@ -42,6 +42,8 @@
 #define ENTRY_WORD ".entry"
 #define EXTERN_WORD ".extern"
 
+#define STRING_END "\0"
+
 #define COMMENT_SIGN ';'
 #define STRING_SIGN '"'
 #define NEWLINE '\n'
@@ -55,6 +57,7 @@
 #define MINUS '-'
 #define LEFT_BRACKET '['
 #define RIGHT_BRACKET ']'
+
 
 /*------------------- Global Variables -------------------*/
 
