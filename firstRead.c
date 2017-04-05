@@ -1,41 +1,45 @@
+#include "structs.h"
 #include "common.h"
 
-int checkOneOperand(char *, char *) 
-int checkTwoOperands(char *, char *, char *)
-int skipSpaces(char *, char *)
-int frstOpChk(char *)
+int checkOneOperand(char *, char *);
+int checkTwoOperands(char *, char *, char *);
+int skipSpaces(char *, char *);
+int frstOpChk(char *);
 
 
 /* the first loop that: opens the given filename, reads through it, adding the relevant information to symbols linked-list, code table, and data table */
-startLoop(char * fileName)
+void startLoop(char * fileName)
 {
 
 	FILE *fp;	
 	int lineNum = 0;			/* holds the current line number */
 	int j,i;				/* index variable */
+	int length;
 	bool label_flag;			/* holds info on whether a label exists in line or not */
-	char[MAX_BUF] buf;			/* a buffer to hold the current line read */
-	char[MAX_BUF] tempBuf;			/* a temp buffer to hold a part of buf temporarily */
-	char[MAX_BUF] tempBuf2;			/* another temp buffer to hold a part of buf temporarily */
-	char[MAX_BUF] tempLabel;		/* a buffer for holding potential label name */
-	char[MAX_LABEL_LENGTH] label;   	/* holds current label if it exists */
-	char[MAX_LABEL_LENGTH] tempWord;	/* a temp buffer to hold a temporary word from buf */
+	char buf[MAX_BUF];			/* a buffer to hold the current line read */
+	char tempBuf[MAX_BUF];			/* a temp buffer to hold a part of buf temporarily */
+	char tempBuf2[MAX_BUF];			/* another temp buffer to hold a part of buf temporarily */
+	char tempLabel[MAX_BUF];		/* a buffer for holding potential label name */
+	char label[MAX_LABEL_LENGTH];   	/* holds current label if it exists */
+	char tempWord[MAX_LABEL_LENGTH];	/* a temp buffer to hold a temporary word from buf */
 	int tempNum;				/* a temp int to hold numbers */
-	char[MAX_LABEL_LENGTH] sourceFile;
+	char sourceFile[MAX_LABEL_LENGTH];
 	int code_length;
 	int data_length;
 
 	char letter;			
 	int labelpos;			/* label position in line */ 
 	int cmdNUM;			/* command type */
-	int 1opresult;
+	int op1result;
 	char * op1name;
-	int 2opresult;
+	int op2result;
 	char * op2name;
 	int check;
 	int L; 				/* the number of words required by the line */
-
-
+	symp newSym;
+	datp newDat;
+	codp newCod;
+	datp tempDat;
 
 	strcpy(sourceFile,fileName);	
 	strcat(sourceFile,SOURCE_FILE);	/* add ".as" to the end of the filename, to address to the proper file */
@@ -63,25 +67,26 @@ startLoop(char * fileName)
 	   /*--- MAKE SURE TO CHECK IF J IS NEEDED IN NEXT LINE ---*/ 
 	   /*--- MAKE SURE TO CHECK IF J IS NEEDED IN NEXT LINE ---*/
 
-	   strncpy(letter,buf+j,1); 		/* check first non-space letter of the line to see if it's a comment line */
+	   /*strncpy((char)letter,buf+j,1); 		/* check first non-space letter of the line to see if it's a comment line */
+	   letter = buf[j];
 	   if(letter == COMMENT_SIGN)
 	   {
 		break;
 	   }
 	   j = 0; /* reset index j after check */
 	   
-	   if((labelpos = strchr(buf,LABEL_SIGN)) != NULL) 	 /* checks if the line contains a label */
+	   if((labelpos = strcspn(buf,(char *)LABEL_SIGN)) != (strlen(buf))) 		/* checks if the line contains a label */
 	   {
 		sscanf(buf, " %s", &tempLabel);
 		
 		/* checks for valid label */
-		if(strchr(tempLabel,STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
+		if(strchr(tempLabel,(char)STRING_SIGN) != NULL)				/* find if there is a '"' in the word */
 		{
-		   check = strcspn(tempLabel,LABEL_SIGN);				/* find the location of ':' */
+		   check = strcspn(tempLabel,(char *)LABEL_SIGN);			/* find the location of ':' */
 		   strncpy(tempWord,tempLabel,length);					/* copy the part of the word before ':' into tempWord, to check */
 		   if(strchr(tempWord,STRING_SIGN) == strrchr(tempWord,STRING_SIGN))	/* check that only one '"' exists before ':' */
 		   {
-			if(strchr(tempLabel+check,LABEL_SIGN) != NULL)
+			if(strchr(tempLabel+check,(char)LABEL_SIGN) != NULL)
 			{
 			   break;		/* we have found that ':' is between two '"'s so it's not part of a label, but part of a string */
 			}
@@ -100,7 +105,7 @@ startLoop(char * fileName)
 		    /* ADD ERROR HANDLING */
 		}
 		
-		if(strlen(word)>MAX_LABEL_LENGTH)
+		if(strlen(tempLabel)>MAX_LABEL_LENGTH)
 		{
 		   /* error, label length is too big*/
 		   /* ADD ERROR HANDLING */
@@ -130,7 +135,7 @@ startLoop(char * fileName)
 	
 		if(label_flag)					/* if label exists */
 		{	
-		   check = strcspn(buf+j,SPACE);			/* find the end of label name */
+		   check = strcspn(buf+j,(char *)SPACE);		/* find the end of label name */
 		   strncpy(tempBuf,buf+j,check-1);			/* copy the label name to tempbuf, without spaces and ":" */
 		   strcpy(tempBuf2,buf+check+j);			/* copy the rest of buf to tempBuf2 */
 		   newSym = createSym(tempBuf, DC, false, instruction);	/* create a symbol with the label name */
@@ -159,7 +164,7 @@ startLoop(char * fileName)
 				/* ADD ERROR HANDLING */
 			}
 			
-			if(sscanf(tempBuf2, "%d", tempNum) != 0)
+			if(sscanf(tempBuf2, "%d", &tempNum) != 0)
 			{
 				if(label_flag)				/* create a data node to hold first number, with the label if it exists */
 				{	
@@ -181,7 +186,7 @@ startLoop(char * fileName)
 					addData(newDat); 	
 					DC++;
 				}
-				while((check = strcspn(tempBuf2,COMMA)) != strlen(tempBuf2)) 	/* as long as there are no more commas (numbers) in line */
+				while((check = strcspn(tempBuf2,(char *)COMMA)) != strlen(tempBuf2)) 	/* as long as there are no more commas (numbers) in line */
 				{
 					j = skipSpaces(tempBuf2+check,tempBuf2);		/* find the next number in buf (skipping previous numbers) */ 
 					if(j == -1)
@@ -189,7 +194,7 @@ startLoop(char * fileName)
 						/* line is empty after previous number */
 						
 					}
-					if(sscanf(tempBuf2, "%d", tempNum) != 0)		/* add the number to data list */
+					if(sscanf(tempBuf2, "%d", &tempNum) != 0)		/* add the number to data list */
 					{
 						newDat = createDat(DC, tempNum, "" , data);
 						addData(newDat); 	
@@ -199,7 +204,7 @@ startLoop(char * fileName)
 
 				/* no more commas, there should still be one more number */
 
-				if(sscanf(tempBuf2, "%d", tempNum) != 0)		/* add the number to data list */
+				if(sscanf(tempBuf2, "%d", &tempNum) != 0)		/* add the number to data list */
 				{
 					newDat = createDat(DC, tempNum, "" , data);
 					addData(newDat); 	
@@ -235,7 +240,7 @@ startLoop(char * fileName)
 			}
 			else
 			{
-				if((tempBuf = strchr(tempBuf2[1],STR_FLAG)) != NULL) 	/* find end of string word, copy it to tempbuf */
+				if((strcpy(tempBuf,strchr(tempBuf2+1,(char)STR_FLAG))) != NULL) 	/* find end of string word, copy it to tempbuf */
 				{
 					j = skipSpaces(tempBuf,tempWord);		/* find the next word in buf (skipping previous spaces and ".string") */
 					if(j != -1)
@@ -253,7 +258,7 @@ startLoop(char * fileName)
 				i = 0;
 				if(label_flag)
 				{	
-					newDat = createDat(DC, tempbuf[1+i], label, string) 	/* create a data node to hold next letter, with the label if it exists */
+					newDat = createDat(DC, tempBuf[1+i], label, string); 	/* create a data node to hold next letter, with the label if it exists */
 					if(getLabel(label) == NULL)				/* check that a label with the same name doesn't exist already */ 
 					{
 						addData(newDat);
@@ -267,14 +272,14 @@ startLoop(char * fileName)
 					}
 
 				}
-				while(tempbuf[1+i] != STR_FLAG)
+				while(strncmp((char *)tempBuf+1+i,(char *)STR_FLAG,1) != 0)
 				{
-					newDat = createDat(DC, tempbuf[1+i], "" , string) 	/* create a data node to hold next letter */
+					newDat = createDat(DC, tempBuf[1+i], "" , string); 	/* create a data node to hold next letter */
 					addData(newDat);
 					DC++;
 					i++;
 				}
-				newDat = createDat(DC, 0, "" , string) 	/* create a data node of only "0" to signal end of string */
+				newDat = createDat(DC, 0, "" , string); 	/* create a data node of only "0" to signal end of string */
 				addData(newDat);
 				DC++;
 								
@@ -291,7 +296,7 @@ startLoop(char * fileName)
 		
 	   if(strstr(buf,ENTRY_WORD) != NULL || strstr(buf,EXTERN_WORD) != NULL)
 	   {
-		tempBuf = strchr(buf,SPACE);			/* find the end of instruction name */
+		strcpy(tempBuf,strchr(buf,(char)SPACE));	/* find the end of instruction name */
 		/* step 9+10 in algorithm */
 		if(strstr(buf,EXTERN_WORD) != NULL)		/* if it's external instruction */
 		{
@@ -301,8 +306,8 @@ startLoop(char * fileName)
 			/* error: no more letters in line */
 			/* ADD ERROR HANDLING */
 		   }	
-		   check = strcspn(tempBuf,SPACE);		/* find the end of external symbol name */
-		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempbuf2, without spaces and ":" */			
+		   check = strcspn(tempBuf,(char *)SPACE);		/* find the end of external symbol name */
+		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempBuf2, without spaces and ":" */			
 		   j = skipSpaces(tempBuf,tempWord);
 		   if(j != -1)
 		   {
@@ -328,7 +333,7 @@ startLoop(char * fileName)
 	   /* skip spaces in line until next word is reached */
 	   if(label_flag)
 	   {
-		j = skipSpaces(buf+labelpos,word);
+		j = skipSpaces(buf+labelpos,tempWord);
 	   	if(j == -1)
 		{
 			/* error: no more letters in line */
@@ -338,7 +343,7 @@ startLoop(char * fileName)
 	   }
 	   else
 	   {
-		j = skipSpaces(buf+j,word);
+		j = skipSpaces(buf+j,tempWord);
 		if(j == -1)
 		{
 			/* error: no more letters in line */
@@ -347,12 +352,12 @@ startLoop(char * fileName)
 	   }
 	   
 
-	   cmdNUM = checkCMD(word);
+	   cmdNUM = checkCMD(tempWord);
 	   switch(cmdNUM)
 	   {
 		case -1: /* error: no command */
 		case 0:  /* mov */ 
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			
 			if(j == -1)
 			{
@@ -360,18 +365,18 @@ startLoop(char * fileName)
 				/* ADD ERROR HANDLING */
 			}
 
-			2opresult = checkTwoOperands(buf+j,op1name,op2name);
-			if(2opresult < 10)
+			op2result = checkTwoOperands(buf+j,op1name,op2name);
+			if(op2result < 10)
 			{
 				/* error: error in operand info */
 				/* ADD ERROR HANDLING */
 			}
-			else if(2opresult % 10 == 1)
+			else if(op2result % 10 == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'mov' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(2opresult == 42) 	/* both operands are registers: they require only 1 word */
+			if(op2result == 42) 	/* both operands are registers: they require only 1 word */
 			{
 				L = 2;
 			}
@@ -380,7 +385,7 @@ startLoop(char * fileName)
 				L = 3;
 			}
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (op2result/10), (op2result % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
@@ -399,20 +404,20 @@ startLoop(char * fileName)
 			
 			
 		case 1:  /* cmp */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			2opresult = checkTwoOperands(buf+j, op1name, op2name);
-			if(2opresult < 10)
+			op2result = checkTwoOperands(buf+j, op1name, op2name);
+			if(op2result < 10)
 			{
 				/* error: error in operand info */
 				/* ADD ERROR HANDLING */
 			}
-			if(2opresult == 42) 	/* both operands are registers: they require only 1 word */
+			if(op2result == 42) 	/* both operands are registers: they require only 1 word */
 			{
 				L = 2;
 			}
@@ -421,7 +426,7 @@ startLoop(char * fileName)
 				L = 3;
 			}
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (op2result/10), (op2result % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
@@ -439,25 +444,25 @@ startLoop(char * fileName)
 			IC += L;
 
 		case 2:  /* add */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			2opresult = checkTwoOperands(buf+j, op1name, op2name);
-			if(2opresult < 10)
+			op2result = checkTwoOperands(buf+j, op1name, op2name);
+			if(op2result < 10)
 			{
 				/* error: error in operand info */
 				/* ADD ERROR HANDLING */
 			}
-			else if(2opresult % 10 == 1)
+			else if(op2result % 10 == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'add' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(2opresult == 42) 	/* both operands are registers: they require only 1 word */
+			if(op2result == 42) 	/* both operands are registers: they require only 1 word */
 			{
 				L = 2;
 			}
@@ -466,7 +471,7 @@ startLoop(char * fileName)
 				L = 3;
 			}
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (op2result/10), (op2result % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
@@ -484,26 +489,26 @@ startLoop(char * fileName)
 			IC += L;
 
 		case 3:  /* sub */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			2opresult = checkTwoOperands(buf+j, op1name, op2name);
-			if(2opresult < 10)
+			op2result = checkTwoOperands(buf+j, op1name, op2name);
+			if(op2result < 10)
 			{
 				/* error: error in operand info */
 				/* ADD ERROR HANDLING */
 			}
-			else if(2opresult % 10 == 1)
+			else if(op2result % 10 == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'sub' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
 			
-			else if(2opresult == 42) 	/* both operands are registers: they require only 1 word */
+			else if(op2result == 42) 	/* both operands are registers: they require only 1 word */
 			{
 				L = 2;
 			}
@@ -512,7 +517,7 @@ startLoop(char * fileName)
 				L = 3;
 			}
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (op2result/10), (op2result % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
@@ -530,20 +535,20 @@ startLoop(char * fileName)
 			IC += L;
 
 		case 4:  /* not */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 1)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 1)
 			{
 				/* error: destination operand is using illegal address for command 'not' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(1opresult == 0)
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -551,7 +556,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'not' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
@@ -570,20 +575,20 @@ startLoop(char * fileName)
 			}
 			
 		case 5:  /* clr */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 1)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 1)
 			{
 				/* error: destination operand is using illegal address for command 'clr' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(1opresult == 0)
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -591,7 +596,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'clr' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
@@ -610,25 +615,25 @@ startLoop(char * fileName)
 			}
 
 		case 6:  /* lea */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			2opresult = checkTwoOperands(buf+j, op1name, op2name);
-			if(2opresult < 10)
+			op2result = checkTwoOperands(buf+j, op1name, op2name);
+			if(op2result < 10)
 			{
 				/* error: error in operand info */
 				/* ADD ERROR HANDLING */
 			}
-			else if(2opresult % 10 == 1)
+			else if(op2result % 10 == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'lea' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			else if(2opresult < 30 ) 
+			else if(op2result < 30 ) 
 			{
 				/* error: origin operand is using illegal address methods for command 'lea' (immediate or register) */
 				/* ADD ERROR HANDLING */
@@ -636,7 +641,7 @@ startLoop(char * fileName)
 
 			L = 3; /* 'lea' command can't use 2 registers, so it always requires 3 word lines */
 
-			newCod = createCod(IC, cmdNUM, op1name, op2name, (2opresult/10), (2opresult % 10), lineNum);
+			newCod = createCod(IC, cmdNUM, op1name, op2name, (op2result/10), (op2result % 10), lineNum);
 			addCodeNode(newCod);
 		  	if(label_flag)
 			{
@@ -654,20 +659,20 @@ startLoop(char * fileName)
 			IC += L;
 
 		case 7:  /* inc */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 1)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'inc' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(1opresult == 0)
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -675,7 +680,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'inc' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
@@ -694,20 +699,20 @@ startLoop(char * fileName)
 			}
 			
 		case 8:  /* dec */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 1)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'dec' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(1opresult == 0)
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -715,7 +720,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'dec' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 		  		if(label_flag)
 				{
@@ -735,20 +740,20 @@ startLoop(char * fileName)
 
 			
 		case 9:  /* jmp */ 
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 1)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 1)
 			{
 				/* error: destination operand is using illegal address for command 'jmp' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(1opresult == 0)
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -756,7 +761,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'jmp' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
@@ -775,20 +780,20 @@ startLoop(char * fileName)
 			}
 			
 		case 10: /* bne */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 1)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'bne' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(1opresult == 0)
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -796,7 +801,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'bne' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
@@ -815,20 +820,20 @@ startLoop(char * fileName)
 			}
 			
 		case 11: /* red */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 1)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'red' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(1opresult == 0)
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -836,7 +841,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'red' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
@@ -855,15 +860,15 @@ startLoop(char * fileName)
 			}
 			
 		case 12: /* prn */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 0)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -871,7 +876,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'prn' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
@@ -891,20 +896,20 @@ startLoop(char * fileName)
 
 			
 		case 13: /* jsr */
-			j = skipSpaces(buf+j,word);
+			j = skipSpaces(buf+j,tempWord);
 			if(j == -1)
 			{
 				/* error: no more letters in line */
 				/* ADD ERROR HANDLING */
 			}
 
-			1opresult = checkOneOperand(buf+j, op2name)
-			if(1opresult == 1)
+			op1result = checkOneOperand(buf+j, op2name);
+			if(op1result == 1)
 			{
 				/* error: destination operand is using illegal address method for command 'jsr' (immediate) */
 				/* ADD ERROR HANDLING */
 			}
-			if(1opresult == 0)
+			if(op1result == 0)
 			{
 				/* error: no operand information recieved */
 				/* ADD ERROR HANDLING */
@@ -912,7 +917,7 @@ startLoop(char * fileName)
 			else
 			{
 				L = 2; /* 'jsr' command always requires 2 words */
-				newCod = createCod(IC, cmdNUM, "", op2name, 0, 1opresult, lineNum);
+				newCod = createCod(IC, cmdNUM, "", op2name, 0, op1result, lineNum);
 				addCodeNode(newCod);
 			  	if(label_flag)
 				{
@@ -971,7 +976,8 @@ startLoop(char * fileName)
 			 	IC += L;
 
 		default: /* if not a command, or error */
-
+			
+			continue;
 			/* ADD ERROR HANDLING */
 	   }
 
@@ -988,27 +994,27 @@ startLoop(char * fileName)
 	updateSymbolAdress(IC);
 
 	i = 0;
-	dat temp;
+
 	while(i<=DC)		/* translate data list to machine data list */
 	{
-		temp = getDataInfo(i);
-		addMword(createMdata(i, (temp->value)));
+		tempDat = getDataInfo(i);
+		addMdata(createMdata(i, (tempDat->value)));
 		i++;
 	}
 }
 
-int skipSpaces(char * str, char * toWord)	/* a function for "skipping" spaces in a given string */
+int skipSpaces(char * str, char * toWord)		/* a function for "skipping" spaces in a given string */
 {
 	int i = 0;
-	while(isspace(str+i)) 	 		/* as long as current letter pointed to in the string is space */
+	while(isspace(str+i)) 	 			/* as long as current letter pointed to in the string is space */
 	{
-	   i++;			 		/* skip a letter */
-	   if((str+i) == NEWLINE) 	 	/* check for making sure we didn't reach end of string */
-		return -1;			/* if we did, return -1 to signal */
+	   i++;			 			/* skip a letter */
+	   if(strncmp(str+i,(char *)NEWLINE,1) == 0) 	/* check for making sure we didn't reach end of string */
+		return -1;				/* if we did, return -1 to signal */
 	}
-	toWord = strcpy(toWord,buf+i);  	/* copy the next "word" to the desired string */
+	toWord = strcpy(toWord,str+i);  		/* copy the next "word" to the desired string */
 	
-	return i;				/* return the index for the next non-space character in str */
+	return i;					/* return the index for the next non-space character in str */
 }
 
 
@@ -1043,7 +1049,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 			/* error: no comma separating operands */
 			/* ADD ERROR HANDLING */
 	   }
-	   length = strcspn(str,COMMA); 		/* check for the end of first operand by finding comma */
+	   length = strcspn(str,(char *)COMMA); 	/* check for the end of first operand by finding comma */
 	   strncpy(op1,str,length);			/* copy where first operand should be to op1 (with the comma, for the check) */
 	   strcpy(op2,str+length); 			/* copy where next operand should be to op2 (without the comma) */
 	   
@@ -1055,11 +1061,11 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 		{
 		   i++;
 		}
-		else if(i == 0 && (op1+1 == PLUS || op1+1 == MINUS))
+		else if((i == 0) && ((strncmp(op1+1,(char *)PLUS,1) == 0) || (strncmp(op1+1,(char *)MINUS,1) == 0)))
 		{
 		   i++; 	/* plus or minus signs are allowed before the number */
 		}
-		else if(op1+1+i == SPACE) /* found end of number */
+		else if(strncmp(op1+1+i, (char *)SPACE,1) == 0) /* found end of number */
 		{
 			break;
 		}
@@ -1105,7 +1111,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 					/* ADD ERROR HANDLING */
 			   	}
 
-			   	length = strcspn(str,COMMA);		/* find the beginning of the next operand info */
+			   	length = strcspn(str,(char *)COMMA);	/* find the beginning of the next operand info */
 			   	strcpy(op2,str+length+1); 		/* copy it to op2, skipping the comma */
 			   	strncpy(op1,str,length);		/* copy the first part to op1 (with the comma, for the check) */	
 	 
@@ -1140,13 +1146,13 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	   else
 	   {
 	   	op1type = 2; 		/* signal that first operand is a register */
-		if((garbage = strchr(str,COMMA)) == NULL)
+		if((garbage = strchr(str,(char)COMMA)) == NULL)
 		{
 			/* error: no comma separating operands */
 			/* ADD ERROR HANDLING */
 		}
 
-		length = strcspn(str,COMMA);		/* find the beginning of the next operand info */
+		length = strcspn(str,(char *)COMMA);		/* find the beginning of the next operand info */
 		strcpy(op2,str+length+1); 		/* copy it to op2, skipping the comma */
 		strncpy(op1,str,length);		/* copy the first part to op1 (with the comma, for the check) */
 		
@@ -1159,7 +1165,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	   }
 
 	   i = 0;
-	   while(isgraph(op1+i) && op1+i != COMMA)
+	   while(isgraph(op1+i) && strncmp(op1+i,(char *)COMMA,1) != 0)
 	   {
 		i++;
 	   }
@@ -1169,12 +1175,12 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	if(op1type == 0)	/* check that we didn't find first operand type yet, so should be a variable */ 
 	{
 	   op1type = 4; 		/* signal that first operand is a variable */
-	   if((garbage = strchr(str,COMMA)) == NULL)
+	   if((garbage = strchr(str,(char)COMMA)) == NULL)
 	   {
 		/* error: no comma separating operands */
 		/* ADD ERROR HANDLING */
 	   }
-	   length = strcspn(str,COMMA);		/* find the beginning of the next operand info */
+	   length = strcspn(str,(char *)COMMA);	/* find the beginning of the next operand info */
 	   strcpy(op2,str+length+1); 		/* copy it to op2, skipping the comma */
 	   strncpy(op1,str,length);		/* copy the first part to op1 (with the comma, for the check) */
 	   
@@ -1192,7 +1198,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	   }
 
 	   i = 0;
-	   while(isgraph(op1+i) && op1+i != COMMA)
+	   while((isgraph(op1+i)) && (strncmp(op1+i,(char *)COMMA,1) != 0))
 	   {
 		i++;
 	   }
@@ -1207,7 +1213,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	/* reset index numbers before op2 check */
 	i=0;
 	
-	i = skipSpaces(op2, op2)
+	i = skipSpaces(op2, op2);
 	if(i == -1)
 	{
 		/* error: line is empty after comma */
@@ -1225,6 +1231,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)			/* a function 
 	{
 		/* error: no valid first operand found */		
 		/* ADD ERROR HANDLING */
+		return;
 	}
 	else
 	{
@@ -1291,11 +1298,11 @@ int checkOneOperand(char * str, char * opName) /* a function to check the validi
 		{
 		   i++;
 		}
-		else if(i == 0 && (str+1 == PLUS || str+1 == MINUS))
+		else if(i == 0 && (strncmp(str+1,(char *)PLUS,1) == 0 || strncmp(str+1,(char *)MINUS,1) == 0))
 		{
 		   i++; 	/* plus or minus signs are allowed before the number */
 		}
-		else if(str+1+i == SPACE) /* found end of number */
+		else if(strncmp(str+1+i,(char *)SPACE,1)) /* found end of number */
 		{
 			break;
 		}
