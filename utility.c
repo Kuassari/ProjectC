@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 /*-------------------From Base 10 to Base 16-------------------*/
 
 char HexChar [16] = { '0', '1', '2', '3', '4', '5', '6', '7',
@@ -85,12 +86,12 @@ static int * initHexArray (char * pDecStr, int * pnElements)
  * 126 - misplaced expression
  */
 
-void errorFunction(String sourceFile int lineNum, int errorCode)
+void errorFunction(char * sourceFile, int lineNum, int errorCode)
 {
-    switch case(errorCode)
+    switch(errorCode)
     {
         case 100:
-                printf("':' is not part of lable\n")
+                printf("':' is not part of lable\n");
                 break;
 
         case 101:
@@ -229,9 +230,9 @@ int checkCMD(char * toCheck)
    return -1;
 }
 
-/* Convert a decimal number to a binary number (in array) */
-void cnvrtToBIN(int decimal, int binary, int WORD_LENGTH){
-
+/* Convert a decimal number to a binary number */
+void cnvrtToBIN(int decimal, int binary)
+{
    int quotient;
    unsigned int mask;
    int i=0;
