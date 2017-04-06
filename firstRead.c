@@ -1,9 +1,9 @@
 #include "structs.h"
 
-int checkOneOperand(char *, char *);
-int checkTwoOperands(char *, char *, char *);
+int checkOneOperand(char *, char *, char *, int);
+int checkTwoOperands(char *, char *, char *, char *, int);
 int skipSpaces(char *, char *);
-int frstOpChk(char *);
+int frstOpChk(char *, char *, int);
 void errorFunction(char *, int, int);
 
 
@@ -166,7 +166,7 @@ void startLoop(char * fileName)
 		if(j == -1)
 		{
 			/* error code 105: line is empty (after label name if there was label) */
-			/errorFunction(fileName, lineNum, 105);
+			errorFunction(fileName, lineNum, 105);
 		}
 
   		if(strncmp(tempWord,DATA_WORD,5) == 0)			/* if the word is ".data" */
@@ -393,7 +393,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op2result = checkTwoOperands(buf+j,op1name,op2name);
+			op2result = checkTwoOperands(buf+j,op1name,op2name, fileName, lineNum);
 			if(op2result < 10)
 			{
 				/* error code 112: error in operand info */
@@ -442,7 +442,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op2result = checkTwoOperands(buf+j, op1name, op2name);
+			op2result = checkTwoOperands(buf+j, op1name, op2name, fileName, lineNum);
 			if(op2result < 10)
 			{
 				/* error code 112: error in operand info */
@@ -483,7 +483,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op2result = checkTwoOperands(buf+j, op1name, op2name);
+			op2result = checkTwoOperands(buf+j, op1name, op2name, fileName, lineNum);
 			if(op2result < 10)
 			{
 				/* error code 112: error in operand info */
@@ -529,7 +529,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op2result = checkTwoOperands(buf+j, op1name, op2name);
+			op2result = checkTwoOperands(buf+j, op1name, op2name, fileName, lineNum);
 			if(op2result < 10)
 			{
 				/* error code 112: error in operand info */
@@ -575,7 +575,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 1)
 			{
 				/* error code 113: destination operand is using illegal address method for command 'not' (immediate) */
@@ -616,7 +616,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 1)
 			{
 				/* error code 113: destination operand is using illegal address for command 'clr' (immediate) */
@@ -657,7 +657,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op2result = checkTwoOperands(buf+j, op1name, op2name);
+			op2result = checkTwoOperands(buf+j, op1name, op2name, fileName, lineNum);
 			if(op2result < 10)
 			{
 				/* error code 115: no operand information recieved */
@@ -703,7 +703,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 1)
 			{
 				/* error code 113: destination operand is using illegal address method for command 'inc' (immediate) */
@@ -744,7 +744,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 1)
 			{
 				/* error code 113: destination operand is using illegal address method for command 'dec' (immediate) */
@@ -787,7 +787,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 1)
 			{
 				/* error code 113: destination operand is using illegal address for command 'jmp' (immediate) */
@@ -829,7 +829,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 1)
 			{
 				/* error code 113: destination operand is using illegal address method for command 'bne' (immediate) */
@@ -871,7 +871,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 1)
 			{
 				/* error code 113: destination operand is using illegal address method for command 'red' (immediate) */
@@ -913,7 +913,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 0)
 			{
 				/* error code 115: no operand information recieved */
@@ -949,7 +949,7 @@ void startLoop(char * fileName)
 				errorFunction(fileName, lineNum, 103);
 			}
 
-			op1result = checkOneOperand(buf+j, op2name);
+			op1result = checkOneOperand(buf+j, op2name, fileName, lineNum);
 			if(op1result == 1)
 			{
 				/* error code 113: destination operand is using illegal address method for command 'jsr' (immediate) */
