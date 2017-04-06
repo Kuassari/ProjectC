@@ -1,6 +1,7 @@
 #include "structs.h"
 
 int skipSpaces(char *, char *);
+void errorFunction(char *, int, int);
 
 
 /* the second loop that: opens the given filename to read and 3 other output files to write to, translates the relevant code from the given file in assembly to machine code in the output files */
@@ -273,23 +274,30 @@ void endLoop(char * fileName)
 			case 1:	/* immediate number */
 				op1 = 0;		/* fix the operand addressing method to be the correct number required by the assembler */
 
+
 				op1result = atoi(tempCod->operand1) << 2;
 				/* copy the immediate number with atoi, then shift it 2 times to get it to the right location */
 				ARE = 0;		/* absolute */
 
+
 			case 2: /* register */
 				op1 = 3;		/* fix the operand addressing method to be the correct number required by the assembler */
+
 
 				op1result = atoi(tempCod->operand1+1) << 8;
 				/* get the register number from the operand by looking at the 2nd letter, then shift it 8 times to get it to the right location*/
 				ARE = 0;		/* absolute */
 
+
 			case 3: /* register index */
 				op1 = 2;		/* fix the operand addressing method to be the correct number required by the assembler */
 
+
 				op1result = (atoi(tempCod->operand1+4) << 2) + (atoi(tempCod->operand1+1) << 8);
-				/* shift the bits in the first and second register given by 2 (second register) and 8 (first register) to get them to the right location */
+				/* shift the bits in the first and second register given by 2 (second register) and 8 (first register) 
+				 * to get them to the right location */
 				ARE = 0;		/* absolute */
+
 
 			case 4: /* variable */
 				op1 = 1;		/* fix the operand addressing method to be the correct number required by the assembler */
@@ -298,13 +306,17 @@ void endLoop(char * fileName)
 				{
 					if(tempSym->isExtern == false)
 					{
-						op1result = (tempSym->address) << 2;	/* get the address of the symbol, shift it 2 times to get it to the right location */
+						op1result = (tempSym->address) << 2;	/* get the address of the symbol, shift it 2 times to get 
+											 * it to the right location */
 						ARE = 2;	/* relocatable */
 					}
 					else
 					{
 						op1result = 0 << 2;			/* if symbol is external, address should be 0 */
-						addExt(createExt(tempSym->name, (tempCod->address)+1));	/* add the external symbol to the external list, to be written later to the external file, use "address+1" because we need the address following the original command */
+						addExt(createExt(tempSym->name, (tempCod->address)+1));	/* add the external symbol to the external list, 
+													 * to be written later to the external file, use "address+1"
+													 * because we need the address following 
+													 * the original command */
 						ARE = 1;	/* external */
 					}
 				}
@@ -318,14 +330,17 @@ void endLoop(char * fileName)
 
 		   op1ARE = ARE; /* save 1st operand ERA status before checking 2nd operand and its ERA */
 
+
 		   switch(tempCod->op2addressMethod)	/* check destination operand addressing method */	
 		   {
 			case 1:	/* immediate number */
 				op2 = 0;		/* fix the operand addressing method to be the correct number required by the assembler */
 
+
 				op2result = atoi(tempCod->operand2) << 2;
 				/* copy the immediate number with atoi, then shift it 2 times to get it to the right location */
 				ARE = 0;		/* absolute */
+
 
 			case 2: /* register */
 				op2 = 3;		/* fix the operand addressing method to be the correct number required by the assembler */
@@ -340,12 +355,15 @@ void endLoop(char * fileName)
 				}
 				ARE = 0;		/* absolute */
 
+
 			case 3: /* register index */
 				op2 = 2;		/* fix the operand addressing method to be the correct number required by the assembler */
 
 				op2result = (atoi(tempCod->operand2+4) << 2) + (atoi(tempCod->operand2+1) << 8);
-				/* shift the bits in the first and second register given by 2 (second register) and 8 (first register) to get them to the right location */
+				/* shift the bits in the first and second register given by 2 (second register) and 8 (first register) to get 
+				 * them to the right location */
 				ARE = 0;		/* absolute */
+
 
 			case 4: /* variable */
 				op2 = 1;		/* fix the operand addressing method to be the correct number required by the assembler */
@@ -354,13 +372,16 @@ void endLoop(char * fileName)
 				{
 					if(tempSym->isExtern == false)
 					{
-						op2result = (tempSym->address) << 2;	/* get the address of the symbol, shift it 2 times to get it to the right location */
+						op2result = (tempSym->address) << 2;	/* get the address of the symbol, shift it 2 times to get it to 
+											 * the right location */
 						ARE = 2;	/* relocatable */
 					}
 					else
 					{
 						op2result = 0 << 2;			/* if symbol is external, address should be 0 */
-						addExt(createExt(tempSym->name, (tempCod->address)+2));	/* add the external symbol to the external list, to be written later to the external file, use "address+2" because we need the address following the first operand */
+						addExt(createExt(tempSym->name, (tempCod->address)+2));	/* add the external symbol to the external list, 
+													 * to be written later to the external file, use "address+2"
+													 * because we need the address following the first operand */
 						ARE = 1;	/* external */
 					}
 				}
@@ -371,7 +392,8 @@ void endLoop(char * fileName)
 				}
 		   } /* end of second operand switch check */
 		   addMachCode(createMach(tempCod->address, groupCode, opCode, op1, op2, 0));	/* add the command line to the machine code list */
-		   addMword(createMword((tempCod->address)+1, op1result+op1ARE));		/* add the first operand information to the machine word list (should be both operands if both are registers) */
+		   addMword(createMword((tempCod->address)+1, op1result+op1ARE));		/* add the first operand information to the machine word list
+												 * (should be both operands if both are registers) */
 		   if((op1 != 3) || op2 != 3)	/* if one of the operands isn't a register */
 		   {
 			addMword(createMword((tempCod->address)+2, op2result+op1ARE));		/* add the second operand information to the machine word list */
@@ -402,7 +424,8 @@ void endLoop(char * fileName)
 				op2 = 2;		/* fix the operand addressing method to be the correct number required by the assembler */
 
 				op2result = (atoi(tempCod->operand2+4) << 2) + (atoi(tempCod->operand2+1) << 8);
-				/* shift the bits in the first and second register given by 2 (second register) and 8 (first register) to get them to the right location */
+				/* shift the bits in the first and second register given by 2 (second register) and 8 (first register) to get them to the right
+				 * location */
 				ARE = 0;		/* absolute */
 
 			case 4: /* variable */
@@ -412,13 +435,15 @@ void endLoop(char * fileName)
 				{
 					if(tempSym->isExtern == false)
 					{
-						op2result = (tempSym->address) << 2;	/* get the address of the symbol, shift it 2 times to get it to the right location */
+						op2result = (tempSym->address) << 2;	/* get the address of the symbol, shift it 2 times to get it to the right
+											 * location */
 						ARE = 2;	/* relocatable */
 					}
 					else
 					{
 						op2result = 0 << 2;				/* if symbol is external, address should be 0 */
-						addExt(createExt(label, (tempCod->address)+1));	/* add the external symbol to the external list, to be written later to the external file */
+						addExt(createExt(label, (tempCod->address)+1));	/* add the external symbol to the external list, 
+												 * to be written later to the external file */
 						ARE = 1;	/* external */
 					}
 				}
@@ -428,8 +453,9 @@ void endLoop(char * fileName)
 					errorFunction(fileName, lineNum, 129);					
 				}
 		   } /* end of operand switch check */
+
 		addMachCode(createMach(tempCod->address, groupCode, opCode, op1, op2, 0));	/* add the command line to the machine code list */
-		addMword(createMword((tempCod->address)+1, op2result+ARE));		/* add the operand information to the machine word list */
+		addMword(createMword((tempCod->address)+1, op2result+ARE));			/* add the operand information to the machine word list */
 		}
 
 
