@@ -100,131 +100,131 @@ void errorFunction(char * sourceFile, int lineNum, int errorCode)
     switch(errorCode)
     {
         case 100:
-                printf("error in line %d - ':' is not part of lable\n", lineNum);
+                fprintf(stderr,"%s: error in line %d - ':' is not part of lable\n",sourceFile, lineNum);
                 break;
 
         case 101:
-                printf("error in line %d - first letter invalid\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - first letter invalid\n",sourceFile, lineNum);
                 break;
 
         case 102:
-                printf("error in line %d - lable length is too long\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - lable length is too long\n", sorceFile, lineNum);
                 break;
 
         case 103:
-                printf("error in line %d - no more letters in the line\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - no more letters in the line\n", sorceFile, lineNum);
                 break;
 
         case 104:
-                printf("error in line %d - lable name already exists\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - lable name already exists\n", sorceFile, lineNum);
                 break;
 
         case 105:
-                printf("error in line %d - missing expression after ':'\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - missing expression after ':'\n", sorceFile, lineNum);
                 break;
 
         case 106:
-                printf("error in line %d - missing arguments\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - missing arguments\n", sorceFile, lineNum);
                 break;
 
         case 107:
-                printf("error in line %d - next word is not a string\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - next word is not a string\n", sorceFile, lineNum);
                 break;
 
         case 108:
-                printf("error in line %d - line isn't empty after the string\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - line isn't empty after the string\n", sorceFile, lineNum);
                 break;
 
         case 109:
-                printf("error in line %d - missing \" for the string\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - missing \" for the string\n", sorceFile, lineNum);
                 break;
 
         case 110:
-                printf("error in line %d - first word unknown\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - first word unknown\n", sorceFile, lineNum);
                 break;
 
         case 111:
-                printf("error in line %d - line isn't empty after external symbol name\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - line isn't empty after external symbol name\n", sorceFile, lineNum);
                 break;
 
         case 112:
-                printf("error in line %d - error in operand information\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - error in operand information\n", sorceFile, lineNum);
                 break;
 
         case 113:
-                printf("error in line %d - destination operand is using illegal address method for the command\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - destination operand is using illegal address method for the command\n", sorceFile, lineNum);
                 break;
 
         case 114:
-                printf("error in line %d - origin operand is using illegal address method for the command\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - origin operand is using illegal address method for the command\n", sorceFile, lineNum);
                 break;
 
         case 115:
-                printf("error in line %d - no operand information recieved\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - no operand information recieved\n", sorceFile, lineNum);
                 break;
 
         case 116:
-                printf("error in line %d - unknown command\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - unknown command\n", sorceFile, lineNum);
                 break;
 
         case 117:
-                printf("error in line %d - missing comma\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - missing comma\n", sorceFile, lineNum);
                 break;
 
         case 118:
-                printf("error in line %d - first operand invalid\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - first operand invalid\n", sorceFile, lineNum);
                 break;
 
         case 119:
-                printf("error in line %d - missing space between first operand and comma\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - missing space between first operand and comma\n", sorceFile, lineNum);
                 break;
 
         case 120:
-                printf("error in line %d - illegal register number\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - illegal register number\n", sorceFile, lineNum);
                 break;
 
         case 121:
-                printf("error in line %d - missing bracket\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - missing bracket\n", sorceFile, lineNum);
                 break;
 
         case 122:
-                printf("error in line %d - first register must be an odd number\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - first register must be an odd number\n", sorceFile, lineNum);
                 break;
 
         case 123:
-                printf("error in line %d - invalid char\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - invalid char\n", sorceFile, lineNum);
                 break;
 
         case 124:
-                printf("error in line %d - invalid second operand\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - invalid second operand\n", sorceFile, lineNum);
                 break;
 
         case 125:
-                printf("error in line %d - invalid first operand\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - invalid first operand\n", sorceFile, lineNum);
                 break;
 
         case 126:
-                printf("error in line %d - misplaced expression\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - misplaced expression\n", sorceFile, lineNum);
                 break;
 
 	case 127:
-                printf("error in line %d - label name doesn't exist in label list\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - label name doesn't exist in label list\n", sorceFile, lineNum);
                 break;
 
 	case 128:
-                printf("error in line %d - line isn't empty after entry symbol name\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - line isn't empty after entry symbol name\n", sorceFile, lineNum);
                 break;
 
 	case 129:
-                printf("error in line %d - symbol is not in symbol list\n", lineNum);
+                fprintf(stderr, "%s: error in line %d - symbol is not in symbol list\n", sorceFile, lineNum);
                 break;
 
 	case 000:
-		printf("error not found\n");
+		fprintf(stderr, "%s: error not found\n", sorceFile);
                 break;
 
         default:
-                printf("error not found\n");
+                fprintf(stderr, "%s: error not found\n", sorceFile);
                 break;
     }
 }
