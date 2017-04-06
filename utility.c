@@ -274,7 +274,7 @@ int skipSpaces(char * str, char * toWord)
 
 /* a function that recieves the first operand of a two-operand command, and checks that there are no values between it and the comma separating it 
  * from the second operand (should be the last letter of op1) */
-int frstOpChk(char * op1)
+int frstOpChk(char * op1, char * fileName, int lineNum)
 {
 
 	int j = 0;
@@ -311,7 +311,7 @@ int frstOpChk(char * op1)
 /* a function to check the validity and type of a single operand, which can be a second operand of a two-operand command, 
  * or the single operand of a one-operand command. assumes the string given starts with the first letter of the operand. 
  * return 1 for immediate number, 2 for register, 3 for register-index, and 4 for variable. 0 is given if no type is detected */
-int checkOneOperand(char * str, char * opName)
+int checkOneOperand(char * str, char * opName,char * fileName, int lineNum)
 {
 
 	int i = 0;
@@ -450,7 +450,7 @@ int checkOneOperand(char * str, char * opName)
 	   if((garbage = strchr(str,COMMA)) != NULL)
 	   {
 		/* error code 126: there is a comma but shouldn't be */
-		/errorFunction(fileName, lineNum, 126);
+		errorFunction(fileName, lineNum, 126);
 	   }	      
 
 	   i = skipSpaces(str, garbage);
@@ -478,7 +478,7 @@ int checkOneOperand(char * str, char * opName)
 
 /* a function to check the operands of a command that needs 2 operands. 
  * assume these 2 operands exist in the string and the given string begins with the first operand and not a space */
-int checkTwoOperands(char * str,char * op1name, char * op2name)	
+int checkTwoOperands(char * str,char * op1name, char * op2name, char * fileName, int lineNum)	
 {
 	int i = 0;
 	int j = 0;
@@ -541,7 +541,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)
 		}
 	   }
 
-	   if(frstOpChk(op1) == -1)
+	   if(frstOpChk(op1, fileName, lineNum) == -1)
 	   {
 		/* error code 119: non-space exists between first operand and comma */
 		 errorFunction(fileName, lineNum, 119);	
@@ -631,7 +631,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)
 		
 	   }
 
-	   if(frstOpChk(op1) == -1)
+	   if(frstOpChk(op1, fileName, lineNum) == -1)
 	   {
 		/* error code 119: non-space exists between first operand and comma */
 		errorFunction(fileName, lineNum, 119);
@@ -661,7 +661,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)
 	   strncpy(op1,str,length);		/* copy the first part to op1 (with the comma, for the check) */
 	   strcat(op1,STRING_END);
 	   	   
-	   if(frstOpChk(op1) == -1)
+	   if(frstOpChk(op1, fileName, lineNum) == -1)
 	   {
 		/* error code 119: non-space exists between first operand and comma */
 		errorFunction(fileName, lineNum, 119);
@@ -689,7 +689,7 @@ int checkTwoOperands(char * str,char * op1name, char * op2name)
 		errorFunction(fileName, lineNum, 124);
 	}
 
-	op2type = checkOneOperand(op2, op2name);		/* send the second operand to be checked by the single operand check function */
+	op2type = checkOneOperand(op2, op2name, fileName, lineNum);		/* send the second operand to be checked by the single operand check function */
 	if(op2type == 0)	/* operand type not found for second operand */
 	{
 	   /* error code 124: error with 2nd operand */
