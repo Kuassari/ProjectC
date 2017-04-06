@@ -97,8 +97,8 @@ void endLoop(char * fileName)
 	   {
 		if(strlen(tempWord)>MAX_LABEL_LENGTH)
 		{
-		   /* error, label length is too big*/
-		   /* ADD ERROR HANDLING */
+		   /* error code 102: label length is too big*/
+		   errorFunction(fileName, lineNum, 102);
 		}
 
 		strncpy(tempLabel,buf,labelpos);
@@ -121,14 +121,14 @@ void endLoop(char * fileName)
 		}
 		else if(strchr(tempLabel,LABEL_SIGN) == NULL)
 		{
-		    /* error, ':' is not part of label */
-		    /* ADD ERROR HANDLING */
+		    /* error code 100: ':' is not part of label */
+		    errorFunction(fileName, lineNum, 100);
 		}
 
 		if(isalpha(letter)==0)
 		{
-		    /* error, first letter is not a real letter */
-		    /* ADD ERROR HANDLING */
+		    /* error code 101: first letter is not a real letter */
+		    errorFunction(fileName, lineNum, 101);
 		}
 		
 		label_flag = true;
@@ -155,18 +155,21 @@ void endLoop(char * fileName)
 		   j = skipSpaces(tempBuf,tempBuf);		/* check that line isn't empty after ".extern" */
 		   if(j == -1)
 		   {
-			/* error: no more letters in line */
-			/* ADD ERROR HANDLING */
+			/* error code 103: no more letters in line */
+			errorFunction(fileName, lineNum, 103);
 		   }	
+
 		   check = strcspn(tempBuf,(char *)SPACE);		/* find the end of external symbol name */
 		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempbuf2, without spaces and ":" */			
 		   strcat(tempBuf2,STRING_END);
 		   j = skipSpaces(tempBuf,tempWord);
+
 		   if(j != -1)
 		   {
-			/* error: line isn't empty after external symbol name */
-			/* ADD ERROR HANDLING */
+			/* error code 111: line isn't empty after external symbol name */
+			errorFunction(fileName, lineNum, 111);
 		   }
+
 		   if(getLabel(tempBuf2) != NULL)		/* make sure external word is in symbol list */
 		   {
 			address = getSymbolAddress(check);	/* get the address of label name*/
@@ -175,29 +178,33 @@ void endLoop(char * fileName)
 
 			fprintf(fext, "%d \t %s", address, tempBuf2);	/* write the label name and its address (in hexa) to external labels file */
 		   }
+
 		   else
 		   {
-			/* error: label name doesn't exist in label list */
-			/* ADD ERROR HANDLING */
+			/* error code 127: label name doesn't exist in label list */
+			errorFunction(fileName, lineNum, 127);
 		   }
+
 		}
 		else if(strstr(buf,ENTRY_WORD) != NULL)		/* if it's entry instruction */	
 		{
 		   j = skipSpaces(tempBuf,tempBuf);		/* check that line isn't empty after ".entry" */
 		   if(j == -1)
 		   {
-			/* error: no more letters in line */
-			/* ADD ERROR HANDLING */
-		   }	
+			/* error code 103: no more letters in line */
+			errorFunction(fileName, lineNum, 103);
+		   }
+	
 		   check = strcspn(tempBuf,(char *)SPACE);		/* find the end of entry symbol name */
 		   strncpy(tempBuf2,tempBuf,check-1);		/* copy the symbol name to tempbuf2, without spaces and ":" */			
 		   strcat(tempBuf2,STRING_END);
 		   j = skipSpaces(tempBuf,tempWord);
 		   if(j != -1)
 		   {
-			/* error: line isn't empty after entry symbol name */
-			/* ADD ERROR HANDLING */
+			/* error code 128: line isn't empty after entry symbol name */
+			errorFunction(fileName, lineNum, 128);
 		   }
+
 		   if(getLabel(tempBuf2) != NULL)			/* make sure entry word is in symbol list */
 		   {
 			address = getSymbolAddress(check);	/* get the address of label name*/
@@ -208,8 +215,8 @@ void endLoop(char * fileName)
 		   }
 		   else
 		   {
-			/* error: label name doesn't exist in label list */
-			/* ADD ERROR HANDLING */
+			/* error code 127: label name doesn't exist in label list */
+			errorFunction(fileName, lineNum, 127);
 		   }
 		}	 	
 	   }
@@ -229,8 +236,8 @@ void endLoop(char * fileName)
 		j = skipSpaces(buf+labelpos,tempWord);
 	   	if(j == -1)
 		{
-			/* error: no more letters in line */
-			/* ADD ERROR HANDLING */
+			/* error code 103: no more letters in line */
+			errorFunction(fileName, lineNum, 103);
 		}
 		j += labelpos;
 	   }
@@ -239,8 +246,8 @@ void endLoop(char * fileName)
 		j = skipSpaces(buf+j,tempWord);
 		if(j == -1)
 		{
-			/* error: no more letters in line */
-			/* ADD ERROR HANDLING */
+			/* error code 103: no more letters in line */
+			errorFunction(fileName, lineNum, 103);
 		}
 	   }
 	   
@@ -303,8 +310,8 @@ void endLoop(char * fileName)
 				}
 				else
 				{
-					/* error: symbol is not in symbol list */
-					/* ADD ERROR HANDLING */
+					/* error code 129: symbol is not in symbol list */
+					errorFunction(fileName, lineNum, 129);
 				}
 
 		   } /* end of first operand switch check */
@@ -359,8 +366,8 @@ void endLoop(char * fileName)
 				}
 				else
 				{
-					/* error: symbol is not in symbol list */
-					/* ADD ERROR HANDLING */
+					/* error code 129: symbol is not in symbol list */
+					errorFunction(fileName, lineNum, 129);
 				}
 		   } /* end of second operand switch check */
 		   addMachCode(createMach(tempCod->address, groupCode, opCode, op1, op2, 0));	/* add the command line to the machine code list */
@@ -417,8 +424,8 @@ void endLoop(char * fileName)
 				}
 				else
 				{
-					/* error: symbol is not in symbol list */
-					/* ADD ERROR HANDLING */					
+					/* error code 129: symbol is not in symbol list */
+					errorFunction(fileName, lineNum, 129);					
 				}
 		   } /* end of operand switch check */
 		addMachCode(createMach(tempCod->address, groupCode, opCode, op1, op2, 0));	/* add the command line to the machine code list */
@@ -431,8 +438,8 @@ void endLoop(char * fileName)
 
 	   else
 	   {
-		/* error: illegal command */
-		/* ADD ERROR HANDLING */
+		/* error code 116: unknown command */
+		errorFunction(fileName, lineNum, 116);	
 	   }
 	
 	 
