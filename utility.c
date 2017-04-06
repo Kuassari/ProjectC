@@ -87,116 +87,119 @@ static int * initHexArray (char * pDecStr, int * pnElements)
  * 126 - misplaced expression
  */
 
+
+/* the function gets file name, line number and code error,
+ * and print to stderr details that are rellavent to this specific error */
 void errorFunction(char * sourceFile, int lineNum, int errorCode)
 {
     switch(errorCode)
     {
         case 100:
-                printf("':' is not part of lable\n");
+                printf("error in line %d - ':' is not part of lable\n", lineNum);
                 break;
 
         case 101:
-                printf("first letter invalid\n");
+                printf("error in line %d - first letter invalid\n", lineNum);
                 break;
 
         case 102:
-                printf("lable length is too long\n");
+                printf("error in line %d - lable length is too long\n", lineNum);
                 break;
 
         case 103:
-                printf("no more letters in the line\n");
+                printf("error in line %d - no more letters in the line\n", lineNum);
                 break;
 
         case 104:
-                printf("lable name already exists\n");
+                printf("error in line %d - lable name already exists\n", lineNum);
                 break;
 
         case 105:
-                printf("missing expression after ':'\n");
+                printf("error in line %d - missing expression after ':'\n", lineNum);
                 break;
 
         case 106:
-                printf("missing arguments\n");
+                printf("error in line %d - missing arguments\n", lineNum);
                 break;
 
         case 107:
-                printf("next word is not a string\n");
+                printf("error in line %d - next word is not a string\n", lineNum);
                 break;
 
         case 108:
-                printf("line isn't empty after the string\n");
+                printf("error in line %d - line isn't empty after the string\n", lineNum);
                 break;
 
         case 109:
-                printf("missing \" for the string\n");
+                printf("error in line %d - missing \" for the string\n", lineNum);
                 break;
 
         case 110:
-                printf("first word unknown\n");
+                printf("error in line %d - first word unknown\n", lineNum);
                 break;
 
         case 111:
-                printf("line isn't empty after external symbol name\n");
+                printf("error in line %d - line isn't empty after external symbol name\n", lineNum);
                 break;
 
         case 112:
-                printf("error in operand information\n");
+                printf("error in line %d - error in operand information\n", lineNum);
                 break;
 
         case 113:
-                printf("destination operand is using illegal address method for the command\n");
+                printf("error in line %d - destination operand is using illegal address method for the command\n", lineNum);
                 break;
 
         case 114:
-                printf("origin operand is using illegal address method for the command\n");
+                printf("error in line %d - origin operand is using illegal address method for the command\n", lineNum);
                 break;
 
         case 115:
-                printf("no operand information recieved\n");
+                printf("error in line %d - no operand information recieved\n", lineNum);
                 break;
 
         case 116:
-                printf("unknown command\n");
+                printf("error in line %d - unknown command\n", lineNum);
                 break;
 
         case 117:
-                printf("missing comma\n");
+                printf("error in line %d - missing comma\n", lineNum);
                 break;
 
         case 118:
-                printf("first operand invalid\n");
+                printf("error in line %d - first operand invalid\n", lineNum);
                 break;
 
         case 119:
-                printf("missing space between first operand and comma\n");
+                printf("error in line %d - missing space between first operand and comma\n", lineNum);
                 break;
 
         case 120:
-                printf("illegal register number\n");
+                printf("error in line %d - illegal register number\n", lineNum);
                 break;
 
         case 121:
-                printf("missing bracket\n");
+                printf("error in line %d - missing bracket\n", lineNum);
                 break;
 
         case 122:
-                printf("first register must be an odd number\n");
+                printf("error in line %d - first register must be an odd number\n", lineNum);
                 break;
 
         case 123:
-                printf("invalid char\n");
+                printf("error in line %d - invalid char\n", lineNum);
                 break;
 
         case 124:
-                printf("invalid second operand\n");
+                printf("error in line %d - invalid second operand\n", lineNum);
                 break;
 
         case 125:
-                printf("invalid firs operand\n");
+                printf("error in line %d - invalid firs operand\n", lineNum);
                 break;
 
         case 126:
-                printf("misplaced expression\n");
+                printf("error in line %d - misplaced expression\n", lineNum);
                 break;
 
         default:
