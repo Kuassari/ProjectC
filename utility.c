@@ -58,6 +58,7 @@ static int * initHexArray (char * pDecStr, int * pnElements)
 /*-------------------Error Table-------------------*/
 
 /*
+ * 000 - error not found
  * 100 - ':' is not part of lable
  * 101 - first letter invalid
  * 102 - lable length is too long
@@ -85,6 +86,9 @@ static int * initHexArray (char * pDecStr, int * pnElements)
  * 124 - invalid second operand
  * 125 - invalid firs operand
  * 126 - misplaced expression
+ * 127 - label name doesn't exist in label list
+ * 128 - line isn't empty after entry symbol name
+ * 129 - symbol is not in symbol list
  */
 
 
@@ -195,11 +199,27 @@ void errorFunction(char * sourceFile, int lineNum, int errorCode)
                 break;
 
         case 125:
-                printf("error in line %d - invalid firs operand\n", lineNum);
+                printf("error in line %d - invalid first operand\n", lineNum);
                 break;
 
         case 126:
                 printf("error in line %d - misplaced expression\n", lineNum);
+                break;
+
+	case 127:
+                printf("error in line %d - label name doesn't exist in label list\n", lineNum);
+                break;
+
+	case 128:
+                printf("error in line %d - line isn't empty after entry symbol name\n", lineNum);
+                break;
+
+	case 129:
+                printf("error in line %d - symbol is not in symbol list\n", lineNum);
+                break;
+
+	case 000:
+		printf("error not found\n");
                 break;
 
         default:
