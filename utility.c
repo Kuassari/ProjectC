@@ -229,7 +229,7 @@ void errorFunction(char * sourceFile, int lineNum, int errorCode)
 }
 
 
-/*------------------- -------------------*/
+/*------------------- Input Validation Functions -------------------*/
 
 
 /* check if a given string is a command */
